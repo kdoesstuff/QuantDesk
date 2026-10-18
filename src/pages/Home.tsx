@@ -1,29 +1,8 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DiceField from '../components/DiceField'
-import { store } from '../lib/storage'
-import type { Attempt } from '../lib/types'
+import GaltonBackdrop from '../components/GaltonBackdrop'
 import { sections } from '../app/sections'
 import './home.css'
-
-function startOfDay(ts: number) {
-  const d = new Date(ts)
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
-}
-
-function streakDays(attempts: Attempt[]) {
-  if (!attempts.length) return 0
-  const days = new Set(attempts.map((a) => startOfDay(a.ts)))
-  let s = 0
-  let cursor = startOfDay(Date.now())
-  if (!days.has(cursor)) cursor -= 86400000
-  while (days.has(cursor)) {
-    s++
-    cursor -= 86400000
-  }
-  return s
-}
 
 const descriptions: Record<string, string> = {
   '/drill/speed-arithmetic': 'Typed answers against a clock. The Zetamac format, with history.',
@@ -49,23 +28,10 @@ const descriptions: Record<string, string> = {
 }
 
 export default function Home() {
-  const [attempts, setAttempts] = useState<Attempt[] | null>(null)
-  useEffect(() => {
-    store.listAttempts().then(setAttempts)
-  }, [])
-
-  const weekAgo = Date.now() - 7 * 86400000
-  const thisWeek = attempts?.filter((a) => a.ts > weekAgo) ?? []
-  const streak = attempts ? streakDays(attempts) : 0
-  const best60 = attempts
-    ?.filter((a) => a.drill === 'speed-arithmetic' && a.durationSec === 60)
-    .reduce((m, a) => Math.max(m, a.score), 0)
-
   return (
     <div className="home">
       <section className="hero">
         <DiceField className="hero__field" />
-
         <div className="hero__text">
           <h1 className="display hero__title">
             <span data-word="Quote" aria-label="Quote" />
@@ -73,17 +39,6 @@ export default function Home() {
             <span data-word="Quote" aria-label="Quote" />
             <span data-word="right." aria-label="right." />
           </h1>
-
-          {attempts === null ? null : attempts.length === 0 ? (
-            <p className="hero__status">Nothing logged yet. The first run sets the baseline.</p>
-          ) : (
-            <p className="hero__status">
-              {thisWeek.length} {thisWeek.length === 1 ? 'session' : 'sessions'} this week
-              {streak > 1 ? `, ${streak} days running` : ''}.
-              {best60 ? ` Best minute so far: ${best60}.` : ''}
-            </p>
-          )}
-
           <div className="hero__actions">
             <Link to="/drill/speed-arithmetic" className="btn btn-yellow">
               Start a drill
@@ -92,30 +47,32 @@ export default function Home() {
               Progress
             </Link>
           </div>
-          <p className="hero__hint faint">Move the cursor through the dice.</p>
         </div>
       </section>
 
-      <section className="index page">
-        {sections.map((g, i) => (
-          <div className="index__group" key={g.title}>
-            <div className="index__head">
-              <span className="index__num tnum">{String(i + 1).padStart(2, '0')}</span>
-              <h2 className="display index__title">{g.title}</h2>
+      <section className="index">
+        <GaltonBackdrop className="index__backdrop" />
+        <div className="index__inner page">
+          {sections.map((g, i) => (
+            <div className="index__group" key={g.title}>
+              <div className="index__head">
+                <span className="index__num tnum">{String(i + 1).padStart(2, '0')}</span>
+                <h2 className="display index__title">{g.title}</h2>
+              </div>
+              <ul>
+                {g.links.map((l) => (
+                  <li key={l.to} className={l.status === 'soon' ? 'is-soon' : ''}>
+                    <div className="index__row">
+                      {l.status === 'live' ? <Link to={l.to}>{l.label}</Link> : <span>{l.label}</span>}
+                      {l.status === 'soon' && <em>next build</em>}
+                    </div>
+                    <p>{descriptions[l.to]}</p>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul>
-              {g.links.map((l) => (
-                <li key={l.to} className={l.status === 'soon' ? 'is-soon' : ''}>
-                  <div className="index__row">
-                    {l.status === 'live' ? <Link to={l.to}>{l.label}</Link> : <span>{l.label}</span>}
-                    {l.status === 'soon' && <em>next build</em>}
-                  </div>
-                  <p>{descriptions[l.to]}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
     </div>
   )

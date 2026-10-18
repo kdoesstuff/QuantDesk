@@ -63,29 +63,6 @@
   justify-content: space-between;
   gap: var(--s-2);
 }
-.rail__theme {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  transition: background var(--dur-fast) var(--ease);
-}
-.rail__theme:hover {
-  background: var(--ground-2);
-}
-.rail__orb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--yellow);
-  box-shadow: inset -4px -3px 0 0 transparent;
-  transition: box-shadow var(--dur-base) var(--ease), background var(--dur-base);
-}
-.rail__orb.is-dark {
-  background: var(--ink-2);
-  box-shadow: inset -4px -3px 0 0 var(--ground);
-}
 
 .rail__nav {
   display: flex;

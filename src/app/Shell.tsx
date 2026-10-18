@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Lenis from 'lenis'
 import { sections } from './sections'
 import { useTheme } from '../lib/theme'
+import ThemePicker from '../components/ThemePicker'
 import './shell.css'
 
 function Mark() {
@@ -97,14 +98,7 @@ export default function Shell() {
             <Mark />
             <span>Quant Desk</span>
           </NavLink>
-          <button
-            className="rail__theme"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
-            title={theme === 'dark' ? 'Light' : 'Dark'}
-          >
-            <span className={'rail__orb' + (theme === 'dark' ? ' is-dark' : '')} />
-          </button>
+          <ThemePicker value={theme} onChange={setTheme} />
         </div>
 
         <nav className="rail__nav" aria-label="Sections">

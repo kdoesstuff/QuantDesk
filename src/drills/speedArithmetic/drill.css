@@ -118,6 +118,7 @@
 .run__clock-bar {
   height: 100%;
   background: var(--yellow);
+  border-radius: 0 999px 999px 0;
   transition: width 120ms linear;
 }
 .run__meta {

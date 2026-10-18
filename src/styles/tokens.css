@@ -1,42 +1,21 @@
 /* ---------------------------------------------------------------------------
    Quant Desk design tokens
 
-   Direction: dark studio ground with one electric blue and a yellow spot
-   colour, grain on the surface, compressed uppercase display type, and 3D
-   objects that answer the cursor. Light theme is the eggshell alternative.
+   Seven themes, picked from the rail. Every colour the UI uses is one of
+   these tokens, so a theme is one block. "ink" is the default.
+
+   Roles:
+     ground / ground-2..4   page, recessed surfaces, rules, strong rules
+     ink / ink-2 / ink-3    text, secondary, tertiary
+     blue / blue-2 / deep   actions, hover, 3D fills            (+ on-blue)
+     yellow / yellow-2      spot colour: key numbers, markers   (+ on-yellow)
+     right / wrong          semantic feedback only
    --------------------------------------------------------------------------- */
 
 :root {
-  /* Ground and ink (dark is the default theme) */
-  --ground: #0e1117;        /* page */
-  --ground-2: #161b24;      /* recessed: inputs, boards, rail hover */
-  --ground-3: #222a38;      /* rules, tracks, chips */
-  --ground-4: #2f3a4d;      /* strong rule */
-  --ink: #f2f3f5;
-  --ink-2: #aab1c0;
-  --ink-3: #6d7585;
-
-  /* Electric blue: actions, the ask side, progress */
-  --blue: #2b4dff;
-  --blue-2: #5a74ff;        /* hover / on dark text */
-  --blue-deep: #0a21c0;     /* fills, 3D objects */
-  --blue-soft: rgba(43, 77, 255, 0.16);
-
-  /* Yellow: the spot colour. Key numbers, the live marker, dice pips. */
-  --yellow: #faed26;
-  --yellow-2: #ffe600;
-  --yellow-soft: rgba(250, 237, 38, 0.14);
-
-  /* Semantic */
-  --right: #5ee6a8;
-  --right-soft: rgba(94, 230, 168, 0.14);
-  --wrong: #ff5c4d;
-  --wrong-soft: rgba(255, 92, 77, 0.14);
-
-  /* Type: one family, used at its extremes */
+  /* Shared, theme independent */
   --font: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
 
-  /* Type scale */
   --t-0: 0.8125rem;
   --t-1: 0.9375rem;
   --t-2: 1.0625rem;
@@ -47,7 +26,6 @@
   --t-7: 4.75rem;
   --t-8: 8rem;
 
-  /* Space */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
@@ -59,72 +37,218 @@
   --s-9: 6rem;
   --s-10: 9rem;
 
-  /* Layout */
   --rail-w: 236px;
   --content-w: 1120px;
   --gutter: clamp(1rem, 4vw, 4rem);
 
-  /* Shape: pills for actions, a soft radius for boards, nothing else rounded */
   --r-pill: 999px;
   --r-board: 18px;
   --r-control: 10px;
 
-  /* Motion */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-fast: 140ms;
   --dur-base: 260ms;
   --dur-slow: 600ms;
+  --dur-theme: 700ms;
 
-  /* Grain strength */
+  /* Default theme: ink. Blue-black, electric blue, yellow. */
+  --ground: #0e1117;
+  --ground-2: #161b24;
+  --ground-3: #222a38;
+  --ground-4: #2f3a4d;
+  --ink: #f2f3f5;
+  --ink-2: #aab1c0;
+  --ink-3: #6d7585;
+  --blue: #2b4dff;
+  --blue-2: #5a74ff;
+  --blue-deep: #0a21c0;
+  --blue-soft: rgba(43, 77, 255, 0.16);
+  --on-blue: #ffffff;
+  --yellow: #faed26;
+  --yellow-2: #ffe600;
+  --yellow-soft: rgba(250, 237, 38, 0.14);
+  --on-yellow: #0e1117;
+  --right: #5ee6a8;
+  --right-soft: rgba(94, 230, 168, 0.14);
+  --wrong: #ff5c4d;
+  --wrong-soft: rgba(255, 92, 77, 0.14);
+  --spot-glow: rgba(43, 77, 255, 0.13);
   --grain: 0.07;
-
+  --die-body: #2a3242;
+  --title-glow: rgba(0, 0, 0, 0.35);
   color-scheme: dark;
 }
 
-/* Light theme: eggshell paper, same blue, coral for wrong. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-    --ground: #eae7dc;
-    --ground-2: #e1ddd0;
-    --ground-3: #d2cdbf;
-    --ground-4: #bfb9a9;
-    --ink: #17191f;
-    --ink-2: #4f5260;
-    --ink-3: #8a8c96;
-    --blue: #2340e6;
-    --blue-2: #0a21c0;
-    --blue-deep: #0a21c0;
-    --blue-soft: rgba(35, 64, 230, 0.12);
-    --yellow: #d9b800;
-    --yellow-2: #b89b00;
-    --yellow-soft: rgba(217, 184, 0, 0.18);
-    --right: #1f9d5f;
-    --right-soft: rgba(31, 157, 95, 0.14);
-    --wrong: #e85a4f;
-    --wrong-soft: rgba(232, 90, 79, 0.14);
-    --grain: 0.05;
-    color-scheme: light;
-  }
-}
-:root[data-theme='light'] {
+/* Eggshell: Exteta (19). Warm paper, near-black actions, coral spot. */
+:root[data-theme='eggshell'] {
   --ground: #eae7dc;
   --ground-2: #e1ddd0;
-  --ground-3: #d2cdbf;
-  --ground-4: #bfb9a9;
+  --ground-3: #d4cdbd;
+  --ground-4: #bfb7a4;
   --ink: #17191f;
   --ink-2: #4f5260;
   --ink-3: #8a8c96;
-  --blue: #2340e6;
-  --blue-2: #0a21c0;
-  --blue-deep: #0a21c0;
-  --blue-soft: rgba(35, 64, 230, 0.12);
-  --yellow: #d9b800;
-  --yellow-2: #b89b00;
-  --yellow-soft: rgba(217, 184, 0, 0.18);
+  --blue: #1e1c19;
+  --blue-2: #3a3733;
+  --blue-deep: #8e8d8a;
+  --blue-soft: rgba(30, 28, 25, 0.1);
+  --on-blue: #ffffff;
+  --yellow: #e85a4f;
+  --yellow-2: #d0483e;
+  --yellow-soft: rgba(232, 90, 79, 0.16);
+  --on-yellow: #ffffff;
   --right: #1f9d5f;
   --right-soft: rgba(31, 157, 95, 0.14);
-  --wrong: #e85a4f;
-  --wrong-soft: rgba(232, 90, 79, 0.14);
+  --wrong: #c8463f;
+  --wrong-soft: rgba(200, 70, 63, 0.14);
+  --spot-glow: rgba(232, 90, 79, 0.1);
   --grain: 0.05;
+  --die-body: #f6f3ea;
+  --title-glow: rgba(255, 255, 255, 0.55);
+  color-scheme: light;
+}
+
+/* Periwinkle: Shopify Editions (01). Cool lilac paper, deep blue. */
+:root[data-theme='periwinkle'] {
+  --ground: #ede8f5;
+  --ground-2: #e2dcf0;
+  --ground-3: #cfc7e6;
+  --ground-4: #adbbda;
+  --ink: #1c2240;
+  --ink-2: #3d52a0;
+  --ink-3: #7384b8;
+  --blue: #3d52a0;
+  --blue-2: #2c3f8c;
+  --blue-deep: #3d52a0;
+  --blue-soft: rgba(61, 82, 160, 0.14);
+  --on-blue: #ffffff;
+  --yellow: #4f6ad9;
+  --yellow-2: #3d52a0;
+  --yellow-soft: rgba(79, 106, 217, 0.16);
+  --on-yellow: #ffffff;
+  --right: #1f9d5f;
+  --right-soft: rgba(31, 157, 95, 0.14);
+  --wrong: #d64545;
+  --wrong-soft: rgba(214, 69, 69, 0.14);
+  --spot-glow: rgba(61, 82, 160, 0.14);
+  --grain: 0.045;
+  --die-body: #f8f6fd;
+  --title-glow: rgba(255, 255, 255, 0.55);
+  color-scheme: light;
+}
+
+/* Blush: Zumtobel (11). Pink-grey paper, rose actions, green spot. */
+:root[data-theme='blush'] {
+  --ground: #f3eef0;
+  --ground-2: #e9e1e4;
+  --ground-3: #d6cfd2;
+  --ground-4: #c2b9b0;
+  --ink: #2b2224;
+  --ink-2: #7e685a;
+  --ink-3: #9c8e85;
+  --blue: #e7717d;
+  --blue-2: #d45a67;
+  --blue-deep: #e7717d;
+  --blue-soft: rgba(231, 113, 125, 0.16);
+  --on-blue: #ffffff;
+  --yellow: #8dbd4f;
+  --yellow-2: #79a93d;
+  --yellow-soft: rgba(141, 189, 79, 0.18);
+  --on-yellow: #1f2a12;
+  --right: #4f9d3c;
+  --right-soft: rgba(79, 157, 60, 0.14);
+  --wrong: #c8463f;
+  --wrong-soft: rgba(200, 70, 63, 0.14);
+  --spot-glow: rgba(231, 113, 125, 0.12);
+  --grain: 0.045;
+  --die-body: #faf6f7;
+  --title-glow: rgba(255, 255, 255, 0.55);
+  color-scheme: light;
+}
+
+/* Charcoal: reputationsquad (27). Warm charcoal, lime. */
+:root[data-theme='charcoal'] {
+  --ground: #222629;
+  --ground-2: #2b3034;
+  --ground-3: #3a3f44;
+  --ground-4: #4d5358;
+  --ink: #f2f3f2;
+  --ink-2: #b4b7b9;
+  --ink-3: #7a7e81;
+  --blue: #61892f;
+  --blue-2: #76a83a;
+  --blue-deep: #4b6b23;
+  --blue-soft: rgba(97, 137, 47, 0.18);
+  --on-blue: #ffffff;
+  --yellow: #86c232;
+  --yellow-2: #9ed64a;
+  --yellow-soft: rgba(134, 194, 50, 0.16);
+  --on-yellow: #141a0c;
+  --right: #9ed64a;
+  --right-soft: rgba(158, 214, 74, 0.14);
+  --wrong: #ff6b5e;
+  --wrong-soft: rgba(255, 107, 94, 0.14);
+  --spot-glow: rgba(134, 194, 50, 0.1);
+  --grain: 0.07;
+  --die-body: #353a3f;
+  --title-glow: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+/* Plum: Diadora (28). Dusty purple, rose-brown actions, yellow. */
+:root[data-theme='plum'] {
+  --ground: #46344e;
+  --ground-2: #3e2e45;
+  --ground-3: #574b5e;
+  --ground-4: #6e6873;
+  --ink: #f6f1f8;
+  --ink-2: #d4c9d6;
+  --ink-3: #a3949f;
+  --blue: #9b786f;
+  --blue-2: #b08a80;
+  --blue-deep: #5a5560;
+  --blue-soft: rgba(155, 120, 111, 0.2);
+  --on-blue: #ffffff;
+  --yellow: #faed26;
+  --yellow-2: #ffe600;
+  --yellow-soft: rgba(250, 237, 38, 0.14);
+  --on-yellow: #2a1f2e;
+  --right: #8ee4a8;
+  --right-soft: rgba(142, 228, 168, 0.14);
+  --wrong: #ff7a6b;
+  --wrong-soft: rgba(255, 122, 107, 0.14);
+  --spot-glow: rgba(250, 237, 38, 0.08);
+  --grain: 0.07;
+  --die-body: #5a4a63;
+  --title-glow: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+/* Sky: KLM iFly (30). White, steel blue, moss. */
+:root[data-theme='sky'] {
+  --ground: #f7f9fb;
+  --ground-2: #edf2f7;
+  --ground-3: #d8e4ee;
+  --ground-4: #b4cde0;
+  --ink: #1a2b36;
+  --ink-2: #31708e;
+  --ink-3: #6f93a8;
+  --blue: #5085a5;
+  --blue-2: #31708e;
+  --blue-deep: #31708e;
+  --blue-soft: rgba(80, 133, 165, 0.14);
+  --on-blue: #ffffff;
+  --yellow: #31708e;
+  --yellow-2: #265b74;
+  --yellow-soft: rgba(49, 112, 142, 0.14);
+  --on-yellow: #ffffff;
+  --right: #687864;
+  --right-soft: rgba(104, 120, 100, 0.16);
+  --wrong: #c9463d;
+  --wrong-soft: rgba(201, 70, 61, 0.14);
+  --spot-glow: rgba(143, 193, 227, 0.22);
+  --grain: 0.04;
+  --die-body: #ffffff;
+  --title-glow: rgba(255, 255, 255, 0.55);
   color-scheme: light;
 }

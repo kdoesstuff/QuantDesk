@@ -1,0 +1,99 @@
+.tp {
+  position: relative;
+}
+.tp__trigger {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-base) var(--ease);
+}
+.tp__trigger:hover {
+  background: var(--ground-2);
+}
+.tp__trigger:active {
+  transform: scale(0.94);
+}
+
+.swatch {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1.5px rgba(127, 127, 127, 0.35);
+  display: block;
+}
+.swatch > span {
+  position: absolute;
+  border-radius: 50%;
+}
+.swatch > span:first-child {
+  width: 9px;
+  height: 9px;
+  left: 2px;
+  top: 2px;
+}
+.swatch > span:last-child {
+  width: 9px;
+  height: 9px;
+  right: 2px;
+  bottom: 2px;
+}
+
+.tp__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 176px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--ground-2);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 18px 50px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 50;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease), transform var(--dur-base) var(--ease);
+}
+.tp__menu.is-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.tp__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 9px;
+  color: var(--ink-2);
+  font-size: var(--t-1);
+  font-weight: 500;
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.tp__item:hover {
+  background: var(--ground-3);
+  color: var(--ink);
+}
+.tp__item[aria-selected='true'] {
+  color: var(--ink);
+  background: var(--ground-3);
+}
+
+@media (max-width: 860px) {
+  .tp__menu {
+    right: auto;
+    left: 0;
+    transform-origin: top left;
+  }
+}

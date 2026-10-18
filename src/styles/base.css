@@ -18,6 +18,7 @@ body {
   margin: 0;
   background: var(--ground);
   color: var(--ink);
+  transition: background-color var(--dur-theme) var(--ease), color var(--dur-theme) var(--ease);
   font-family: var(--font);
   font-size: var(--t-2);
   line-height: 1.5;
@@ -57,17 +58,23 @@ body::after {
   z-index: 0;
   background: radial-gradient(
     520px circle at var(--mx, -999px) var(--my, -999px),
-    rgba(43, 77, 255, 0.13),
+    var(--spot-glow),
     transparent 60%
   );
-  transition: opacity var(--dur-slow) var(--ease);
 }
-:root[data-theme='light'] .spot,
-:root:not([data-theme='dark']) .spot {
-  opacity: 0.55;
-}
-:root[data-theme='dark'] .spot {
-  opacity: 1;
+
+/* Theme switch: everything cross-fades for a moment, then transitions go back to normal. */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition:
+    background-color var(--dur-theme) var(--ease),
+    color var(--dur-theme) var(--ease),
+    border-color var(--dur-theme) var(--ease),
+    fill var(--dur-theme) var(--ease),
+    stroke var(--dur-theme) var(--ease),
+    box-shadow var(--dur-theme) var(--ease) !important;
 }
 
 /* Scrollbars: present but quiet */
@@ -191,14 +198,14 @@ button {
 }
 .btn-primary {
   background: var(--blue);
-  color: #fff;
+  color: var(--on-blue);
 }
 .btn-primary:hover {
   background: var(--blue-2);
 }
 .btn-yellow {
   background: var(--yellow);
-  color: #0e1117;
+  color: var(--on-yellow);
 }
 .btn-yellow:hover {
   background: var(--yellow-2);

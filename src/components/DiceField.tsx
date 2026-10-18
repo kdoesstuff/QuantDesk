@@ -82,7 +82,7 @@ export default function DiceField({ className }: { className?: string }) {
     renderer.setClearColor(0x000000, 0)
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.05
+    renderer.toneMappingExposure = 0.98
     host.appendChild(renderer.domElement)
 
     const scene = new THREE.Scene()
@@ -109,10 +109,9 @@ export default function DiceField({ className }: { className?: string }) {
     let blue = '#0a21c0'
     let yellow = '#faed26'
     const readPalette = () => {
-      const theme = document.documentElement.dataset.theme
       blue = cssVar('--blue-deep') || blue
       yellow = cssVar('--yellow') || yellow
-      inkBody = theme === 'light' ? '#f6f3ea' : '#2a3242'
+      inkBody = cssVar('--die-body') || inkBody
     }
     readPalette()
 
@@ -124,22 +123,25 @@ export default function DiceField({ className }: { className?: string }) {
 
     // Layout: biased to the right so the headline owns the left.
     const spec: { kind: Kind; x: number; y: number; z: number; s: number; tint: 'ink' | 'blue' | 'yellow' }[] = [
-      { kind: 'die', x: 4.2, y: 2.7, z: 0.2, s: 1.15, tint: 'ink' },
-      { kind: 'die', x: 2.6, y: -2.1, z: 0.9, s: 1.15, tint: 'blue' },
-      { kind: 'die', x: 6.3, y: -0.6, z: -0.4, s: 1.0, tint: 'ink' },
-      { kind: 'die', x: 5.9, y: 0.9, z: -1.8, s: 0.75, tint: 'ink' },
-      { kind: 'die', x: 5.4, y: -2.8, z: -1.0, s: 0.8, tint: 'yellow' },
-      { kind: 'die', x: 1.9, y: 3.3, z: -2.4, s: 0.65, tint: 'ink' },
-      { kind: 'coin', x: 1.6, y: -0.6, z: 0.1, s: 0.95, tint: 'yellow' },
-      { kind: 'coin', x: 6.2, y: 2.4, z: -1.6, s: 0.8, tint: 'ink' },
-      { kind: 'coin', x: 4.2, y: 3.4, z: -0.6, s: 0.55, tint: 'blue' },
+      { kind: 'die', x: -4.6, y: 2.4, z: -1.2, s: 1.05, tint: 'ink' },
+      { kind: 'die', x: -2.2, y: -2.6, z: 0.6, s: 1.2, tint: 'blue' },
+      { kind: 'die', x: 0.6, y: 2.9, z: -2.0, s: 0.75, tint: 'ink' },
+      { kind: 'die', x: 3.6, y: 2.2, z: -0.4, s: 1.1, tint: 'ink' },
+      { kind: 'die', x: 5.2, y: -0.4, z: -1.4, s: 0.9, tint: 'ink' },
+      { kind: 'die', x: 2.4, y: -2.8, z: 0.4, s: 1.0, tint: 'yellow' },
+      { kind: 'die', x: -0.8, y: 0.1, z: -3.2, s: 0.6, tint: 'ink' },
+      { kind: 'coin', x: -4.9, y: -1.0, z: -0.6, s: 0.95, tint: 'yellow' },
+      { kind: 'coin', x: 5.0, y: 2.9, z: -2.2, s: 0.7, tint: 'ink' },
+      { kind: 'coin', x: 1.1, y: -1.1, z: -1.8, s: 0.6, tint: 'blue' },
+      { kind: 'coin', x: 4.4, y: -2.9, z: -0.2, s: 0.8, tint: 'ink' },
     ]
 
     const makeMaterials = () => {
       for (const b of bodies) {
         const tint = (b.mesh.userData.tint as 'ink' | 'blue' | 'yellow') ?? 'ink'
         const body = tint === 'ink' ? inkBody : tint === 'blue' ? blue : yellow
-        const pip = tint === 'ink' ? yellow : tint === 'blue' ? '#ffffff' : '#141619'
+        const light = getComputedStyle(document.documentElement).colorScheme === 'light'
+        const pip = tint === 'ink' ? yellow : tint === 'blue' ? '#ffffff' : light ? '#2a2a2a' : '#141619'
         const old = b.mesh.material
         if (b.kind === 'die') {
           b.mesh.material = dieMaterials(body, pip)
@@ -210,9 +212,9 @@ export default function DiceField({ className }: { className?: string }) {
       camera.updateProjectionMatrix()
       // Keep the composition inside the frame on narrow screens.
       const narrow = w < 720
-      group.position.x = narrow ? -2.3 : -1.1
+      group.position.x = 0
       group.position.y = narrow ? 1.2 : 0
-      group.scale.setScalar(narrow ? 0.62 : 0.98)
+      group.scale.setScalar(narrow ? 0.62 : 1)
     }
     resize()
     const ro = new ResizeObserver(resize)

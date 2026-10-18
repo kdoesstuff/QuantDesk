@@ -1,21 +1,41 @@
 import { useEffect, useState } from 'react'
 
-export type Theme = 'light' | 'dark'
+export const THEMES = [
+  { id: 'ink', label: 'Ink', ground: '#0e1117', spot: '#faed26', action: '#2b4dff' },
+  { id: 'eggshell', label: 'Eggshell', ground: '#eae7dc', spot: '#e85a4f', action: '#1e1c19' },
+  { id: 'periwinkle', label: 'Periwinkle', ground: '#ede8f5', spot: '#4f6ad9', action: '#3d52a0' },
+  { id: 'blush', label: 'Blush', ground: '#f3eef0', spot: '#8dbd4f', action: '#e7717d' },
+  { id: 'charcoal', label: 'Charcoal', ground: '#222629', spot: '#86c232', action: '#61892f' },
+  { id: 'plum', label: 'Plum', ground: '#46344e', spot: '#faed26', action: '#9b786f' },
+  { id: 'sky', label: 'Sky', ground: '#f7f9fb', spot: '#31708e', action: '#5085a5' },
+] as const
 
-function readTheme(): Theme {
+export type ThemeId = (typeof THEMES)[number]['id']
+
+const KEY = 'qd.theme'
+
+export function readTheme(): ThemeId {
   const t = document.documentElement.dataset.theme
-  return t === 'light' ? 'light' : 'dark'
+  return (THEMES.some((x) => x.id === t) ? t : 'ink') as ThemeId
 }
 
-export function useTheme(): [Theme, (t: Theme) => void] {
-  const [theme, setThemeState] = useState<Theme>(readTheme)
+export function applyTheme(id: ThemeId) {
+  const root = document.documentElement
+  // Cross-fade: every colour transitions for the duration of the switch.
+  root.classList.add('theme-switching')
+  root.dataset.theme = id
+  try {
+    localStorage.setItem(KEY, id)
+  } catch {
+    /* ignore */
+  }
+  window.setTimeout(() => root.classList.remove('theme-switching'), 760)
+}
+
+export function useTheme(): [ThemeId, (t: ThemeId) => void] {
+  const [theme, setThemeState] = useState<ThemeId>(readTheme)
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    try {
-      localStorage.setItem('qd.theme', theme)
-    } catch {
-      /* ignore */
-    }
+    if (readTheme() !== theme) applyTheme(theme)
   }, [theme])
   return [theme, setThemeState]
 }

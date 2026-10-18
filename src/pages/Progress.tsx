@@ -172,10 +172,7 @@ export default function Progress() {
     return (
       <div className="page progress">
         <h1 className="display progress__title">Progress</h1>
-        <p className="muted">
-          Nothing to show yet. Every run is logged problem by problem, so the picture fills in from the first
-          session.
-        </p>
+        <p className="muted">No runs yet.</p>
         <Link to="/drill/speed-arithmetic" className="btn btn-primary">
           Start speed arithmetic
         </Link>

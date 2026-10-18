@@ -140,7 +140,7 @@ export default function SpeedArithmeticResult() {
           <span className="tnum">{attempt.score}</span>
           <span className="result__verdict">
             {peers.length === 0
-              ? 'First run with these settings. This is the baseline.'
+              ? 'First run with these settings.'
               : isBest
                 ? `New best, up from ${prevBest}.`
                 : attempt.score === prevBest

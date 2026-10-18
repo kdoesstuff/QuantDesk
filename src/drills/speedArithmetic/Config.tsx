@@ -148,15 +148,14 @@ export default function SpeedArithmeticConfigPage() {
             <button className="btn btn-primary" onClick={start} disabled={!valid}>
               Start
             </button>
-            <span className="faint">or press Enter</span>
+            <span className="faint">Enter</span>
           </div>
         </section>
 
+        {history.length > 0 && (
         <aside className="standing">
           <h3>With these settings</h3>
-          {history.length === 0 ? (
-            <p className="muted">No runs yet. Your first one becomes the mark to beat.</p>
-          ) : (
+          {(
             <>
               <p className="standing__best">
                 <span className="tnum">{best}</span>
@@ -171,6 +170,7 @@ export default function SpeedArithmeticConfigPage() {
             </>
           )}
         </aside>
+        )}
       </div>
     </div>
   )
