@@ -37,9 +37,9 @@ export default function Sparkline({
       role="img"
       aria-label={`${values.length} runs, best ${best}, latest ${last}`}
     >
-      <path d={path} fill="none" stroke="var(--cobalt)" strokeWidth="1.8" vectorEffect="non-scaling-stroke" />
-      <circle cx={x(bestIdx)} cy={y(best)} r="3.2" fill="var(--marigold)" />
-      <circle cx={x(values.length - 1)} cy={y(last)} r="3.2" fill="var(--cobalt)" />
+      <path d={path} fill="none" stroke="var(--blue-2)" strokeWidth="1.8" vectorEffect="non-scaling-stroke" />
+      <circle cx={x(bestIdx)} cy={y(best)} r="3.2" fill="var(--yellow)" />
+      <circle cx={x(values.length - 1)} cy={y(last)} r="3.2" fill="var(--blue-2)" />
     </svg>
   )
 }

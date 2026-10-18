@@ -25,7 +25,7 @@ class LocalStore implements Store {
     try {
       localStorage.setItem(KEY, JSON.stringify(list))
     } catch {
-      /* storage unavailable — the session still runs, it just won't persist */
+      /* storage unavailable; the session still runs, it just won't persist */
     }
   }
   async saveAttempt(a: Attempt) {

@@ -84,9 +84,9 @@ export default function SpeedArithmeticConfigPage() {
   return (
     <div className="page drill-config">
       <header className="drill-head">
-        <h1>Speed arithmetic</h1>
+        <h1 className="display">Speed arithmetic</h1>
         <p className="muted">
-          One problem at a time, typed answer, no submit key — a correct answer clears itself. Score is the
+          One problem at a time, typed answer, no submit key. A correct answer clears itself. Score is the
           number right before the clock stops.
         </p>
       </header>

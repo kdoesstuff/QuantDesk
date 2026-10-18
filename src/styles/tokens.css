@@ -1,47 +1,53 @@
 /* ---------------------------------------------------------------------------
-   Quant Desk — design tokens
-   One source of truth for colour, type, spacing and motion.
+   Quant Desk design tokens
+
+   Direction: dark studio ground with one electric blue and a yellow spot
+   colour, grain on the surface, compressed uppercase display type, and 3D
+   objects that answer the cursor. Light theme is the eggshell alternative.
    --------------------------------------------------------------------------- */
 
 :root {
-  /* Paper & ink */
-  --paper: #f7f7f4;
-  --paper-2: #efefea;      /* recessed surfaces: inputs, boards */
-  --paper-3: #e4e4dd;      /* rules, track backgrounds */
-  --ink: #171a26;
-  --ink-2: #4a4e5c;        /* secondary text */
-  --ink-3: #8b8f9c;        /* tertiary text, placeholders */
+  /* Ground and ink (dark is the default theme) */
+  --ground: #0e1117;        /* page */
+  --ground-2: #161b24;      /* recessed: inputs, boards, rail hover */
+  --ground-3: #222a38;      /* rules, tracks, chips */
+  --ground-4: #2f3a4d;      /* strong rule */
+  --ink: #f2f3f5;
+  --ink-2: #aab1c0;
+  --ink-3: #6d7585;
 
-  /* Objects */
-  --cobalt: #2748d9;
-  --cobalt-2: #1d37b0;
-  --cobalt-soft: #dde3fb;
-  --marigold: #f2a33a;
-  --marigold-2: #d88a1e;
-  --marigold-soft: #fbe9cf;
+  /* Electric blue: actions, the ask side, progress */
+  --blue: #2b4dff;
+  --blue-2: #5a74ff;        /* hover / on dark text */
+  --blue-deep: #0a21c0;     /* fills, 3D objects */
+  --blue-soft: rgba(43, 77, 255, 0.16);
+
+  /* Yellow: the spot colour. Key numbers, the live marker, dice pips. */
+  --yellow: #faed26;
+  --yellow-2: #ffe600;
+  --yellow-soft: rgba(250, 237, 38, 0.14);
 
   /* Semantic */
-  --right: #1e9e6a;
-  --right-soft: #d9f2e6;
-  --wrong: #d83a3a;
-  --wrong-soft: #f9dcdc;
+  --right: #5ee6a8;
+  --right-soft: rgba(94, 230, 168, 0.14);
+  --wrong: #ff5c4d;
+  --wrong-soft: rgba(255, 92, 77, 0.14);
 
-  /* Type */
-  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-  --font-ui: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Type: one family, used at its extremes */
+  --font: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
 
-  /* Type scale (Elements-style ratio ≈ 1.25, 16 base) */
-  --t-0: 0.8125rem;   /* 13 */
-  --t-1: 0.9375rem;   /* 15 */
-  --t-2: 1.0625rem;   /* 17 — body */
-  --t-3: 1.3125rem;   /* 21 */
-  --t-4: 1.75rem;     /* 28 */
-  --t-5: 2.375rem;    /* 38 */
-  --t-6: 3.25rem;     /* 52 */
-  --t-7: 4.5rem;      /* 72 */
-  --t-8: 7rem;        /* 112 — drill numerals */
+  /* Type scale */
+  --t-0: 0.8125rem;
+  --t-1: 0.9375rem;
+  --t-2: 1.0625rem;
+  --t-3: 1.3125rem;
+  --t-4: 1.75rem;
+  --t-5: 2.375rem;
+  --t-6: 3.25rem;
+  --t-7: 4.75rem;
+  --t-8: 8rem;
 
-  /* Space (8pt) */
+  /* Space */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
@@ -51,67 +57,74 @@
   --s-7: 3rem;
   --s-8: 4rem;
   --s-9: 6rem;
+  --s-10: 9rem;
 
   /* Layout */
-  --rail-w: 232px;
-  --content-w: 1040px;
-  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --rail-w: 236px;
+  --content-w: 1120px;
+  --gutter: clamp(1rem, 4vw, 4rem);
 
-  /* Radii — one for controls, one for boards. Nothing else is rounded. */
-  --r-control: 6px;
-  --r-board: 14px;
+  /* Shape: pills for actions, a soft radius for boards, nothing else rounded */
+  --r-pill: 999px;
+  --r-board: 18px;
+  --r-control: 10px;
 
   /* Motion */
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --dur-fast: 120ms;
-  --dur-base: 220ms;
-  --dur-slow: 420ms;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur-base: 260ms;
+  --dur-slow: 600ms;
 
-  color-scheme: light;
-}
-
-/* System preference, unless the toggle has explicitly chosen light. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --paper: #121826;
-    --paper-2: #1a2133;
-    --paper-3: #263046;
-    --ink: #eef0f5;
-    --ink-2: #b4b9c8;
-    --ink-3: #7b8195;
-    --cobalt: #6f88ff;
-    --cobalt-2: #8fa2ff;
-    --cobalt-soft: #1f2a52;
-    --marigold: #f6b454;
-    --marigold-2: #ffc46e;
-    --marigold-soft: #3f2f14;
-    --right: #3fcf8e;
-    --right-soft: #15392a;
-    --wrong: #ff6b6b;
-    --wrong-soft: #452020;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme='dark'] {
-  --paper: #121826;
-  --paper-2: #1a2133;
-  --paper-3: #263046;
-  --ink: #eef0f5;
-  --ink-2: #b4b9c8;
-  --ink-3: #7b8195;
-
-  --cobalt: #6f88ff;
-  --cobalt-2: #8fa2ff;
-  --cobalt-soft: #1f2a52;
-  --marigold: #f6b454;
-  --marigold-2: #ffc46e;
-  --marigold-soft: #3f2f14;
-
-  --right: #3fcf8e;
-  --right-soft: #15392a;
-  --wrong: #ff6b6b;
-  --wrong-soft: #452020;
+  /* Grain strength */
+  --grain: 0.07;
 
   color-scheme: dark;
+}
+
+/* Light theme: eggshell paper, same blue, coral for wrong. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --ground: #eae7dc;
+    --ground-2: #e1ddd0;
+    --ground-3: #d2cdbf;
+    --ground-4: #bfb9a9;
+    --ink: #17191f;
+    --ink-2: #4f5260;
+    --ink-3: #8a8c96;
+    --blue: #2340e6;
+    --blue-2: #0a21c0;
+    --blue-deep: #0a21c0;
+    --blue-soft: rgba(35, 64, 230, 0.12);
+    --yellow: #d9b800;
+    --yellow-2: #b89b00;
+    --yellow-soft: rgba(217, 184, 0, 0.18);
+    --right: #1f9d5f;
+    --right-soft: rgba(31, 157, 95, 0.14);
+    --wrong: #e85a4f;
+    --wrong-soft: rgba(232, 90, 79, 0.14);
+    --grain: 0.05;
+    color-scheme: light;
+  }
+}
+:root[data-theme='light'] {
+  --ground: #eae7dc;
+  --ground-2: #e1ddd0;
+  --ground-3: #d2cdbf;
+  --ground-4: #bfb9a9;
+  --ink: #17191f;
+  --ink-2: #4f5260;
+  --ink-3: #8a8c96;
+  --blue: #2340e6;
+  --blue-2: #0a21c0;
+  --blue-deep: #0a21c0;
+  --blue-soft: rgba(35, 64, 230, 0.12);
+  --yellow: #d9b800;
+  --yellow-2: #b89b00;
+  --yellow-soft: rgba(217, 184, 0, 0.18);
+  --right: #1f9d5f;
+  --right-soft: rgba(31, 157, 95, 0.14);
+  --wrong: #e85a4f;
+  --wrong-soft: rgba(232, 90, 79, 0.14);
+  --grain: 0.05;
+  color-scheme: light;
 }

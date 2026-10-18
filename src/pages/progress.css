@@ -43,7 +43,7 @@
   font-weight: 500;
   color: var(--ink-3);
   padding: var(--s-2) 0;
-  border-bottom: 1px solid var(--paper-3);
+  border-bottom: 1px solid var(--ground-3);
 }
 .bests th:first-child,
 .bests td:first-child {
@@ -52,10 +52,10 @@
 .bests td {
   text-align: right;
   padding: var(--s-2) 0;
-  border-bottom: 1px solid var(--paper-3);
+  border-bottom: 1px solid var(--ground-3);
 }
 .bests td a {
-  color: var(--cobalt);
+  color: var(--blue-2);
 }
 
 .progress__danger {
@@ -70,4 +70,11 @@
   gap: var(--s-3);
   flex-wrap: wrap;
   color: var(--ink-2);
+}
+
+.progress__title {
+  font-size: clamp(3rem, 7vw, var(--t-7));
+}
+.progress__section h2 {
+  font-size: var(--t-4);
 }

@@ -4,7 +4,7 @@ export type Theme = 'light' | 'dark'
 
 function readTheme(): Theme {
   const t = document.documentElement.dataset.theme
-  return t === 'dark' ? 'dark' : 'light'
+  return t === 'light' ? 'light' : 'dark'
 }
 
 export function useTheme(): [Theme, (t: Theme) => void] {

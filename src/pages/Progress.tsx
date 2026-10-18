@@ -69,7 +69,7 @@ function ActivityCalendar({ attempts }: { attempts: Attempt[] }) {
             width={cell}
             height={cell}
             rx={3}
-            fill={c.n === -1 ? 'transparent' : c.n === 0 ? 'var(--paper-3)' : 'var(--cobalt)'}
+            fill={c.n === -1 ? 'transparent' : c.n === 0 ? 'var(--ground-3)' : 'var(--blue-2)'}
             opacity={c.n > 0 ? t : 1}
           >
             <title>
@@ -109,7 +109,7 @@ function ScoreChart({ attempts }: { attempts: Attempt[] }) {
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Score over time">
       {y.ticks(4).map((t) => (
         <g key={t}>
-          <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke="var(--paper-3)" />
+          <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke="var(--ground-3)" />
           <text x={padL - 8} y={y(t)} dy="0.35em" textAnchor="end" fontSize="11" fill="var(--ink-3)">
             {t}
           </text>
@@ -120,14 +120,14 @@ function ScoreChart({ attempts }: { attempts: Attempt[] }) {
           {fmt(t)}
         </text>
       ))}
-      <path d={path} fill="none" stroke="var(--cobalt)" strokeWidth="2" />
+      <path d={path} fill="none" stroke="var(--blue-2)" strokeWidth="2" />
       {pts.map((p) => (
         <circle
           key={p.id}
           cx={x(new Date(p.ts))}
           cy={y(p.score)}
           r={p.score === best ? 4.5 : 3}
-          fill={p.score === best ? 'var(--marigold)' : 'var(--cobalt)'}
+          fill={p.score === best ? 'var(--yellow)' : 'var(--blue-2)'}
         >
           <title>
             {new Date(p.ts).toLocaleString()}: {p.score}
@@ -171,7 +171,7 @@ export default function Progress() {
   if (attempts.length === 0) {
     return (
       <div className="page progress">
-        <h1>Progress</h1>
+        <h1 className="display progress__title">Progress</h1>
         <p className="muted">
           Nothing to show yet. Every run is logged problem by problem, so the picture fills in from the first
           session.
@@ -197,7 +197,7 @@ export default function Progress() {
   return (
     <div className="page progress">
       <header className="progress__head">
-        <h1>Progress</h1>
+        <h1 className="display progress__title">Progress</h1>
         <p className="muted">
           {attempts.length} {attempts.length === 1 ? 'run' : 'runs'} on {days} {days === 1 ? 'day' : 'days'},{' '}
           {totalProblems.toLocaleString()} problems right, about {minutes} {minutes === 1 ? 'minute' : 'minutes'} on

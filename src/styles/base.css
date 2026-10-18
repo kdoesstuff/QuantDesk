@@ -10,43 +10,121 @@ html {
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ground-4) transparent;
 }
 
 body {
   margin: 0;
-  background: var(--paper);
+  background: var(--ground);
   color: var(--ink);
-  font-family: var(--font-ui);
+  font-family: var(--font);
   font-size: var(--t-2);
   line-height: 1.5;
   min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Grain: a fixed film over everything, like HAUS. Cheap: one SVG noise tile. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: overlay;
+  animation: grain 1.2s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-1%, -2%); }
+  80% { transform: translate(3%, 1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Cursor light: a soft spot that follows the pointer on dark screens. */
+.spot {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    520px circle at var(--mx, -999px) var(--my, -999px),
+    rgba(43, 77, 255, 0.13),
+    transparent 60%
+  );
+  transition: opacity var(--dur-slow) var(--ease);
+}
+:root[data-theme='light'] .spot,
+:root:not([data-theme='dark']) .spot {
+  opacity: 0.55;
+}
+:root[data-theme='dark'] .spot {
+  opacity: 1;
+}
+
+/* Scrollbars: present but quiet */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ground-4);
+  border-radius: 8px;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.01em;
   margin: 0;
-  font-variation-settings: 'SOFT' 30;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-h1 {
-  font-size: var(--t-6);
-  line-height: 1.05;
-  font-variation-settings: 'opsz' 144, 'SOFT' 40;
+/* The display voice: compressed, black, uppercase. Used for statements and big numbers. */
+.display {
+  font-family: var(--font);
+  font-weight: 800;
+  font-stretch: 78%;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.92;
+}
+.display--wide {
+  font-stretch: 112%;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 h2 {
   font-size: var(--t-4);
-  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
-
 h3 {
   font-size: var(--t-3);
-  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 p {
@@ -73,19 +151,15 @@ button {
   padding: 0;
 }
 
-/* Focus: one visible ring everywhere */
 :focus-visible {
-  outline: 2px solid var(--cobalt);
+  outline: 2px solid var(--yellow);
   outline-offset: 3px;
   border-radius: var(--r-control);
 }
 
-/* Numerals that need to stay still */
 .tnum {
   font-variant-numeric: tabular-nums;
 }
-
-/* Muted text */
 .muted {
   color: var(--ink-2);
 }
@@ -93,40 +167,48 @@ button {
   color: var(--ink-3);
 }
 
-/* Buttons ----------------------------------------------------------------- */
+/* Buttons: pills --------------------------------------------------------- */
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  height: 44px;
-  padding: 0 var(--s-5);
-  border-radius: var(--r-control);
+  height: 48px;
+  padding: 0 var(--s-6);
+  border-radius: var(--r-pill);
   font-weight: 600;
   font-size: var(--t-1);
+  letter-spacing: 0.01em;
   transition:
-    background var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    transform var(--dur-base) var(--ease);
   user-select: none;
+  white-space: nowrap;
 }
 .btn:active {
-  transform: translateY(1px);
+  transform: scale(0.98);
 }
 .btn-primary {
-  background: var(--cobalt);
+  background: var(--blue);
   color: #fff;
 }
 .btn-primary:hover {
-  background: var(--cobalt-2);
+  background: var(--blue-2);
 }
-:root[data-theme='dark'] .btn-primary {
-  color: #0b1024;
+.btn-yellow {
+  background: var(--yellow);
+  color: #0e1117;
+}
+.btn-yellow:hover {
+  background: var(--yellow-2);
 }
 .btn-quiet {
-  background: var(--paper-2);
+  background: var(--ground-3);
   color: var(--ink);
 }
 .btn-quiet:hover {
-  background: var(--paper-3);
+  background: var(--ground-4);
 }
 .btn-ghost {
   color: var(--ink-2);
@@ -135,77 +217,87 @@ button {
 .btn-ghost:hover {
   color: var(--ink);
 }
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
-/* Segmented control ------------------------------------------------------- */
+/* Segmented control ------------------------------------------------------ */
 .seg {
   display: inline-flex;
-  background: var(--paper-2);
-  border-radius: var(--r-control);
-  padding: 3px;
+  background: var(--ground-2);
+  border-radius: var(--r-pill);
+  padding: 4px;
   gap: 2px;
 }
 .seg > button {
   padding: 0 var(--s-4);
-  height: 36px;
-  border-radius: 4px;
+  height: 38px;
+  border-radius: var(--r-pill);
   color: var(--ink-2);
   font-weight: 500;
   font-size: var(--t-1);
+  transition: all var(--dur-fast) var(--ease);
 }
 .seg > button[aria-pressed='true'] {
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow: 0 1px 0 rgba(23, 26, 38, 0.06);
-}
-:root[data-theme='dark'] .seg > button[aria-pressed='true'] {
-  background: var(--paper-3);
+  background: var(--ink);
+  color: var(--ground);
 }
 
-/* Toggle chip ------------------------------------------------------------ */
+/* Chips ------------------------------------------------------------------ */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  height: 36px;
+  height: 38px;
   padding: 0 var(--s-4);
-  border-radius: 999px;
-  border: 1.5px solid var(--paper-3);
+  border-radius: var(--r-pill);
+  border: 1.5px solid var(--ground-4);
   color: var(--ink-2);
   font-weight: 500;
   font-size: var(--t-1);
-  transition: all var(--dur-fast) var(--ease-out);
+  transition: all var(--dur-fast) var(--ease);
+}
+.chip:hover {
+  border-color: var(--ink-3);
+  color: var(--ink);
 }
 .chip[aria-pressed='true'] {
-  border-color: var(--cobalt);
-  background: var(--cobalt-soft);
+  border-color: var(--blue);
+  background: var(--blue-soft);
   color: var(--ink);
 }
 
 /* Inputs ----------------------------------------------------------------- */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-1);
-}
-.field > span {
-  font-size: var(--t-0);
-  color: var(--ink-2);
-}
 .input {
-  height: 40px;
-  padding: 0 var(--s-3);
+  height: 44px;
+  padding: 0 var(--s-4);
   border-radius: var(--r-control);
-  border: 1.5px solid var(--paper-3);
-  background: var(--paper);
+  border: 1.5px solid var(--ground-4);
+  background: var(--ground-2);
+  color: var(--ink);
   width: 100%;
+  transition: border-color var(--dur-fast) var(--ease);
 }
 .input:focus {
   outline: none;
-  border-color: var(--cobalt);
+  border-color: var(--blue);
+}
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
-/* Reduced motion ---------------------------------------------------------- */
+/* Reduced motion --------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+  body::after {
+    animation: none;
+  }
   *,
   *::before,
   *::after {
@@ -215,7 +307,6 @@ button {
   }
 }
 
-/* Utility ---------------------------------------------------------------- */
 .sr-only {
   position: absolute;
   width: 1px;

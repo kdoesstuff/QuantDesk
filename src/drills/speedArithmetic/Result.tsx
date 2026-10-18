@@ -22,10 +22,10 @@ function PaceChart({ ms, ops }: { ms: number[]; ops: Operation[] }) {
   const med = median(ms)! / 1000
 
   const colour: Record<Operation, string> = {
-    add: 'var(--cobalt)',
-    sub: 'var(--cobalt)',
-    mul: 'var(--marigold)',
-    div: 'var(--marigold)',
+    add: 'var(--blue-2)',
+    sub: 'var(--blue-2)',
+    mul: 'var(--yellow)',
+    div: 'var(--yellow)',
   }
 
   // Smoothed trend (moving average of 5)
@@ -42,7 +42,7 @@ function PaceChart({ ms, ops }: { ms: number[]; ops: Operation[] }) {
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Seconds per problem across the run">
       {y.ticks(3).map((t) => (
         <g key={t}>
-          <line x1={padL} x2={W - 8} y1={y(t)} y2={y(t)} stroke="var(--paper-3)" />
+          <line x1={padL} x2={W - 8} y1={y(t)} y2={y(t)} stroke="var(--ground-3)" />
           <text x={padL - 8} y={y(t)} dy="0.35em" textAnchor="end" fontSize="11" fill="var(--ink-3)">
             {t}s
           </text>
@@ -61,7 +61,8 @@ function PaceChart({ ms, ops }: { ms: number[]; ops: Operation[] }) {
       ))}
       <path d={trendPath} fill="none" stroke="var(--ink)" strokeWidth="1.6" />
       <line x1={padL} x2={W - 8} y1={y(med)} y2={y(med)} stroke="var(--ink-2)" strokeDasharray="3 4" />
-      <text x={padL + 4} y={y(med) - 5} fontSize="11" fill="var(--ink-2)">
+      <line x1={W - 96} x2={W - 76} y1={padT + 2} y2={padT + 2} stroke="var(--ink-2)" strokeDasharray="3 4" />
+      <text x={W - 70} y={padT + 6} fontSize="11" fill="var(--ink-2)">
         median {med.toFixed(1)}s
       </text>
       <text x={padL} y={H - 6} fontSize="11" fill="var(--ink-3)">
@@ -141,7 +142,7 @@ export default function SpeedArithmeticResult() {
             {peers.length === 0
               ? 'First run with these settings. This is the baseline.'
               : isBest
-                ? `New best — up from ${prevBest}.`
+                ? `New best, up from ${prevBest}.`
                 : attempt.score === prevBest
                   ? `Ties your best of ${prevBest}.`
                   : `Best with these settings is ${prevBest}.`}
@@ -164,7 +165,7 @@ export default function SpeedArithmeticResult() {
 
       <section className="result__section">
         <h2>Pace</h2>
-        <p className="muted">Seconds per problem, in order. Blue is add and subtract, gold is multiply and divide.</p>
+        <p className="muted">Seconds per problem, in order. Blue is add and subtract, yellow is multiply and divide.</p>
         <PaceChart ms={stats.answered.map((l) => l.ms)} ops={stats.answered.map((l) => l.op)} />
       </section>
 
@@ -186,8 +187,8 @@ export default function SpeedArithmeticResult() {
                   <span className="optable__sign">{OP_SIGN[r.op]}</span> {OP_LABEL[r.op]}
                 </td>
                 <td>{r.n}</td>
-                <td>{r.n ? `${Math.round((r.firstTry / r.n) * 100)}%` : '—'}</td>
-                <td>{r.n ? `${(r.medMs / 1000).toFixed(1)}s` : '—'}</td>
+                <td>{r.n ? `${Math.round((r.firstTry / r.n) * 100)}%` : 'none'}</td>
+                <td>{r.n ? `${(r.medMs / 1000).toFixed(1)}s` : 'none'}</td>
               </tr>
             ))}
           </tbody>

@@ -69,10 +69,10 @@ export default function GaltonBoard({ className }: { className?: string }) {
     }
 
     function draw() {
-      const cobalt = css('--cobalt')
-      const marigold = css('--marigold')
+      const cobalt = css('--blue-2')
+      const marigold = css('--yellow')
       const peg = css('--ink-3')
-      const rule = css('--paper-3')
+      const rule = css('--ground-3')
       const ink2 = css('--ink-2')
 
       ctx.clearRect(0, 0, W, H)
@@ -97,7 +97,7 @@ export default function GaltonBoard({ className }: { className?: string }) {
         }
       }
 
-      // Normal curve (expected shape) behind bins — only once there is a shape to compare to
+      // Normal curve (expected shape) behind the bins, drawn only once there is a shape to compare to
       const maxCount = Math.max(8, ...counts)
       const binH = binBottom - binTop
       if (total >= 24) {

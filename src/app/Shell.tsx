@@ -1,19 +1,64 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import Lenis from 'lenis'
 import { sections } from './sections'
 import { useTheme } from '../lib/theme'
 import './shell.css'
 
 function Mark() {
-  // Four pips: two cobalt, two marigold. The site's only logo.
   return (
     <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="10" cy="10" r="4.2" fill="var(--cobalt)" />
-      <circle cx="22" cy="22" r="4.2" fill="var(--cobalt)" />
-      <circle cx="22" cy="10" r="4.2" fill="var(--marigold)" />
-      <circle cx="10" cy="22" r="4.2" fill="var(--marigold)" />
+      <circle cx="10" cy="10" r="4.4" fill="var(--yellow)" />
+      <circle cx="22" cy="22" r="4.4" fill="var(--yellow)" />
+      <circle cx="22" cy="10" r="4.4" fill="var(--blue-2)" />
+      <circle cx="10" cy="22" r="4.4" fill="var(--blue-2)" />
     </svg>
   )
+}
+
+/** Soft light that follows the pointer. Fine pointers only. */
+function useSpotlight() {
+  useEffect(() => {
+    if (!matchMedia('(pointer: fine)').matches) return
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const root = document.documentElement
+    let x = -999
+    let y = -999
+    let raf = 0
+    const apply = () => {
+      raf = 0
+      root.style.setProperty('--mx', `${x}px`)
+      root.style.setProperty('--my', `${y}px`)
+    }
+    const onMove = (e: PointerEvent) => {
+      x = e.clientX
+      y = e.clientY
+      if (!raf) raf = requestAnimationFrame(apply)
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      cancelAnimationFrame(raf)
+    }
+  }, [])
+}
+
+/** Smooth scrolling for the whole page. Respects reduced motion. */
+function useSmoothScroll(pathname: string) {
+  const lenis = useRef<Lenis | null>(null)
+  useEffect(() => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const l = new Lenis({ autoRaf: true, lerp: 0.11, wheelMultiplier: 1 })
+    lenis.current = l
+    return () => {
+      l.destroy()
+      lenis.current = null
+    }
+  }, [])
+  useEffect(() => {
+    if (lenis.current) lenis.current.scrollTo(0, { immediate: true })
+    else window.scrollTo(0, 0)
+  }, [pathname])
 }
 
 export default function Shell() {
@@ -22,11 +67,14 @@ export default function Shell() {
   const loc = useLocation()
   const focus = loc.pathname.endsWith('/run')
 
-  // Close the drawer on navigation (mobile).
+  useSpotlight()
+  useSmoothScroll(loc.pathname)
   useEffect(() => setOpen(false), [loc.pathname])
 
   return (
     <div className={'shell' + (focus ? ' shell--focus' : '')}>
+      <div className="spot" aria-hidden="true" />
+
       <header className="topbar">
         <button
           className="topbar__menu"
@@ -43,7 +91,7 @@ export default function Shell() {
         </NavLink>
       </header>
 
-      <aside className={'rail' + (open ? ' rail--open' : '')}>
+      <aside className={'rail no-scrollbar' + (open ? ' rail--open' : '')}>
         <div className="rail__head">
           <NavLink to="/" className="brand rail__brand">
             <Mark />
@@ -55,7 +103,7 @@ export default function Shell() {
             aria-label={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
             title={theme === 'dark' ? 'Light' : 'Dark'}
           >
-            <span className={'rail__sun' + (theme === 'dark' ? ' is-moon' : '')} />
+            <span className={'rail__orb' + (theme === 'dark' ? ' is-dark' : '')} />
           </button>
         </div>
 
@@ -84,7 +132,6 @@ export default function Shell() {
             </div>
           ))}
         </nav>
-
       </aside>
 
       {open && <button className="scrim" aria-label="Close menu" onClick={() => setOpen(false)} />}
