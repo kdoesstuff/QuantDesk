@@ -1,0 +1,196 @@
+.shell {
+  display: grid;
+  grid-template-columns: var(--rail-w) 1fr;
+  min-height: 100dvh;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-display);
+  font-size: var(--t-3);
+  font-variation-settings: 'SOFT' 50;
+  letter-spacing: -0.01em;
+}
+
+/* Top bar: mobile only ---------------------------------------------------- */
+.topbar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 56px;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 0 var(--s-4);
+  background: var(--paper);
+  border-bottom: 1px solid var(--paper-3);
+  grid-column: 1 / -1;
+}
+.topbar__menu {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+}
+.topbar__menu span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--ink);
+}
+
+/* Rail -------------------------------------------------------------------- */
+.rail {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  padding: var(--s-6) var(--s-5) var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+  scrollbar-width: thin;
+}
+.rail__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  font-size: var(--t-1);
+}
+.rail__top {
+  display: block;
+  padding: var(--s-1) 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+.rail__top.active {
+  color: var(--cobalt);
+}
+.rail__group {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--s-2);
+}
+.rail__title {
+  font-family: var(--font-display);
+  font-size: var(--t-2);
+  color: var(--ink);
+  margin-bottom: var(--s-1);
+  font-variation-settings: 'SOFT' 50;
+}
+.rail__link {
+  display: block;
+  padding: 3px 0 3px var(--s-3);
+  color: var(--ink-2);
+  border-left: 2px solid transparent;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.rail__link:hover {
+  color: var(--ink);
+}
+.rail__link.active {
+  color: var(--cobalt);
+  border-left-color: var(--cobalt);
+}
+.rail__link--soon {
+  color: var(--ink-3);
+  cursor: default;
+}
+.rail__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+.rail__theme {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+.rail__theme:hover {
+  background: var(--paper-2);
+}
+.rail__sun {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--marigold);
+  box-shadow: inset -4px -3px 0 0 transparent;
+  transition: box-shadow var(--dur-base) var(--ease-out), background var(--dur-base);
+}
+.rail__sun.is-moon {
+  background: var(--ink-2);
+  box-shadow: inset -4px -3px 0 0 var(--paper);
+}
+
+/* Content ----------------------------------------------------------------- */
+.content {
+  padding: var(--s-8) var(--gutter) var(--s-9);
+  min-width: 0;
+}
+.page {
+  max-width: var(--content-w);
+}
+
+/* Focus mode: the drill hides the rail so nothing competes with the problem */
+.shell--focus {
+  grid-template-columns: 1fr;
+}
+.shell--focus .rail {
+  display: none;
+}
+.shell--focus .content {
+  padding: 0;
+}
+
+/* Mobile ------------------------------------------------------------------ */
+.scrim {
+  display: none;
+}
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .topbar {
+    display: flex;
+  }
+  .shell--focus .topbar {
+    display: none;
+  }
+  .rail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(84vw, 320px);
+    background: var(--paper);
+    border-right: 1px solid var(--paper-3);
+    transform: translateX(-100%);
+    transition: transform var(--dur-base) var(--ease-out);
+    z-index: 40;
+  }
+  .rail--open {
+    transform: translateX(0);
+  }
+  .rail__head {
+    justify-content: flex-end;
+  }
+  .rail__brand {
+    display: none;
+  }
+  .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(23, 26, 38, 0.35);
+    z-index: 35;
+  }
+  .content {
+    padding: var(--s-6) var(--gutter) var(--s-8);
+  }
+}

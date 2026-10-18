@@ -1,0 +1,73 @@
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-7);
+}
+.progress__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.progress__head p {
+  max-width: 56ch;
+}
+.progress__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  max-width: 720px;
+}
+.progress__section h2 {
+  font-size: var(--t-4);
+}
+.progress__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+.progress__select {
+  width: auto;
+  max-width: 100%;
+  font-size: var(--t-1);
+}
+
+.bests {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--t-1);
+}
+.bests th {
+  text-align: right;
+  font-weight: 500;
+  color: var(--ink-3);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--paper-3);
+}
+.bests th:first-child,
+.bests td:first-child {
+  text-align: left;
+}
+.bests td {
+  text-align: right;
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--paper-3);
+}
+.bests td a {
+  color: var(--cobalt);
+}
+
+.progress__danger {
+  margin-top: var(--s-6);
+}
+.progress__danger > .btn-ghost {
+  padding-left: 0;
+}
+.progress__confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  color: var(--ink-2);
+}

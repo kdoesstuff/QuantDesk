@@ -1,0 +1,117 @@
+/* ---------------------------------------------------------------------------
+   Quant Desk — design tokens
+   One source of truth for colour, type, spacing and motion.
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* Paper & ink */
+  --paper: #f7f7f4;
+  --paper-2: #efefea;      /* recessed surfaces: inputs, boards */
+  --paper-3: #e4e4dd;      /* rules, track backgrounds */
+  --ink: #171a26;
+  --ink-2: #4a4e5c;        /* secondary text */
+  --ink-3: #8b8f9c;        /* tertiary text, placeholders */
+
+  /* Objects */
+  --cobalt: #2748d9;
+  --cobalt-2: #1d37b0;
+  --cobalt-soft: #dde3fb;
+  --marigold: #f2a33a;
+  --marigold-2: #d88a1e;
+  --marigold-soft: #fbe9cf;
+
+  /* Semantic */
+  --right: #1e9e6a;
+  --right-soft: #d9f2e6;
+  --wrong: #d83a3a;
+  --wrong-soft: #f9dcdc;
+
+  /* Type */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-ui: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Type scale (Elements-style ratio ≈ 1.25, 16 base) */
+  --t-0: 0.8125rem;   /* 13 */
+  --t-1: 0.9375rem;   /* 15 */
+  --t-2: 1.0625rem;   /* 17 — body */
+  --t-3: 1.3125rem;   /* 21 */
+  --t-4: 1.75rem;     /* 28 */
+  --t-5: 2.375rem;    /* 38 */
+  --t-6: 3.25rem;     /* 52 */
+  --t-7: 4.5rem;      /* 72 */
+  --t-8: 7rem;        /* 112 — drill numerals */
+
+  /* Space (8pt) */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+
+  /* Layout */
+  --rail-w: 232px;
+  --content-w: 1040px;
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+
+  /* Radii — one for controls, one for boards. Nothing else is rounded. */
+  --r-control: 6px;
+  --r-board: 14px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+
+  color-scheme: light;
+}
+
+/* System preference, unless the toggle has explicitly chosen light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #121826;
+    --paper-2: #1a2133;
+    --paper-3: #263046;
+    --ink: #eef0f5;
+    --ink-2: #b4b9c8;
+    --ink-3: #7b8195;
+    --cobalt: #6f88ff;
+    --cobalt-2: #8fa2ff;
+    --cobalt-soft: #1f2a52;
+    --marigold: #f6b454;
+    --marigold-2: #ffc46e;
+    --marigold-soft: #3f2f14;
+    --right: #3fcf8e;
+    --right-soft: #15392a;
+    --wrong: #ff6b6b;
+    --wrong-soft: #452020;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --paper: #121826;
+  --paper-2: #1a2133;
+  --paper-3: #263046;
+  --ink: #eef0f5;
+  --ink-2: #b4b9c8;
+  --ink-3: #7b8195;
+
+  --cobalt: #6f88ff;
+  --cobalt-2: #8fa2ff;
+  --cobalt-soft: #1f2a52;
+  --marigold: #f6b454;
+  --marigold-2: #ffc46e;
+  --marigold-soft: #3f2f14;
+
+  --right: #3fcf8e;
+  --right-soft: #15392a;
+  --wrong: #ff6b6b;
+  --wrong-soft: #452020;
+
+  color-scheme: dark;
+}
