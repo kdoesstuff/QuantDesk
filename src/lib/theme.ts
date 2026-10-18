@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 
 export const THEMES = [
   { id: 'ink', label: 'Ink', ground: '#0e1117', spot: '#faed26', action: '#2b4dff' },
-  { id: 'eggshell', label: 'Eggshell', ground: '#eae7dc', spot: '#e85a4f', action: '#1e1c19' },
   { id: 'periwinkle', label: 'Periwinkle', ground: '#ede8f5', spot: '#4f6ad9', action: '#3d52a0' },
   { id: 'blush', label: 'Blush', ground: '#f3eef0', spot: '#8dbd4f', action: '#e7717d' },
   { id: 'charcoal', label: 'Charcoal', ground: '#222629', spot: '#86c232', action: '#61892f' },

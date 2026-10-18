@@ -79,35 +79,6 @@
   color-scheme: dark;
 }
 
-/* Eggshell: Exteta (19). Warm paper, near-black actions, coral spot. */
-:root[data-theme='eggshell'] {
-  --ground: #eae7dc;
-  --ground-2: #e1ddd0;
-  --ground-3: #d4cdbd;
-  --ground-4: #bfb7a4;
-  --ink: #17191f;
-  --ink-2: #4f5260;
-  --ink-3: #8a8c96;
-  --blue: #1e1c19;
-  --blue-2: #3a3733;
-  --blue-deep: #8e8d8a;
-  --blue-soft: rgba(30, 28, 25, 0.1);
-  --on-blue: #ffffff;
-  --yellow: #e85a4f;
-  --yellow-2: #d0483e;
-  --yellow-soft: rgba(232, 90, 79, 0.16);
-  --on-yellow: #ffffff;
-  --right: #1f9d5f;
-  --right-soft: rgba(31, 157, 95, 0.14);
-  --wrong: #c8463f;
-  --wrong-soft: rgba(200, 70, 63, 0.14);
-  --spot-glow: rgba(232, 90, 79, 0.1);
-  --grain: 0.05;
-  --die-body: #f6f3ea;
-  --title-glow: rgba(255, 255, 255, 0.55);
-  color-scheme: light;
-}
-
 /* Periwinkle: Shopify Editions (01). Cool lilac paper, deep blue. */
 :root[data-theme='periwinkle'] {
   --ground: #ede8f5;

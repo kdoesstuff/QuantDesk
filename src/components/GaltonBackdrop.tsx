@@ -49,13 +49,13 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       // Pegs fill about 70% of the height; the pile takes the rest.
       pegGap = W < 720 ? 30 : 44
-      rows = Math.max(8, Math.min(34, Math.floor((H * 0.7) / pegGap)))
+      rows = Math.max(8, Math.min(40, Math.floor((H - 260) / pegGap)))
       // Never wider than the section.
       while ((rows + 2) * pegGap > W * 0.96 && pegGap > 18) pegGap -= 2
       BINS = rows + 1
       cx = W / 2
       topY = H * 0.06
-      binBottom = H - H * 0.04
+      binBottom = H - 10
       if (counts.length !== BINS) {
         counts = new Array<number>(BINS).fill(0)
         total = 0
@@ -94,7 +94,7 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
 
       // Pile, faint
       const binTop = pegY(rows) + pegGap * 0.6
-      const binH = Math.max(40, binBottom - binTop)
+      const binH = Math.max(40, Math.min(220, binBottom - binTop))
       const maxCount = Math.max(6, ...counts)
       const bw = pegGap - Math.max(3, pegGap * 0.24)
       ctx.fillStyle = blue
@@ -149,7 +149,7 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
       }
 
       const binTop = pegY(rows) + pegGap * 0.6
-      const binH = Math.max(40, binBottom - binTop)
+      const binH = Math.max(40, Math.min(220, binBottom - binTop))
       for (let i = balls.length - 1; i >= 0; i--) {
         const b = balls[i]
         if (!b.binning) {

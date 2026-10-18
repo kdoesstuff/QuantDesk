@@ -14,6 +14,9 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  /* Fade the field out before the hero's edges so an object never looks cut. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 7%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 7%, #000 86%, transparent 100%);
 }
 .hero__field canvas {
   display: block;
@@ -82,8 +85,8 @@
 /* Index with the Galton backdrop ------------------------------------------- */
 .index {
   position: relative;
-  margin: var(--s-8) calc(var(--gutter) * -1) 0;
-  padding: var(--s-8) var(--gutter) var(--s-9);
+  margin: var(--s-8) calc(var(--gutter) * -1) calc(var(--s-10) * -1);
+  padding: var(--s-8) var(--gutter) var(--s-10);
   border-top: 1px solid var(--ground-3);
 }
 .index__backdrop {
@@ -218,6 +221,8 @@
   }
   .index {
     margin-top: var(--s-6);
+    margin-bottom: calc(var(--s-8) * -1);
     padding-top: var(--s-6);
+    padding-bottom: var(--s-9);
   }
 }

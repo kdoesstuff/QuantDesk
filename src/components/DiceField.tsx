@@ -123,17 +123,17 @@ export default function DiceField({ className }: { className?: string }) {
 
     // Layout: biased to the right so the headline owns the left.
     const spec: { kind: Kind; x: number; y: number; z: number; s: number; tint: 'ink' | 'blue' | 'yellow' }[] = [
-      { kind: 'die', x: -4.6, y: 2.4, z: -1.2, s: 1.05, tint: 'ink' },
-      { kind: 'die', x: -2.2, y: -2.6, z: 0.6, s: 1.2, tint: 'blue' },
-      { kind: 'die', x: 0.6, y: 2.9, z: -2.0, s: 0.75, tint: 'ink' },
-      { kind: 'die', x: 3.6, y: 2.2, z: -0.4, s: 1.1, tint: 'ink' },
-      { kind: 'die', x: 5.2, y: -0.4, z: -1.4, s: 0.9, tint: 'ink' },
-      { kind: 'die', x: 2.4, y: -2.8, z: 0.4, s: 1.0, tint: 'yellow' },
+      { kind: 'die', x: -3.9, y: 2.0, z: -1.2, s: 1.0, tint: 'ink' },
+      { kind: 'die', x: -2.0, y: -1.9, z: 0.4, s: 1.15, tint: 'blue' },
+      { kind: 'die', x: 0.6, y: 2.4, z: -2.0, s: 0.75, tint: 'ink' },
+      { kind: 'die', x: 3.4, y: 1.9, z: -0.4, s: 1.05, tint: 'ink' },
+      { kind: 'die', x: 4.4, y: -0.3, z: -1.4, s: 0.9, tint: 'ink' },
+      { kind: 'die', x: 2.2, y: -2.0, z: 0.2, s: 1.0, tint: 'yellow' },
       { kind: 'die', x: -0.8, y: 0.1, z: -3.2, s: 0.6, tint: 'ink' },
-      { kind: 'coin', x: -4.9, y: -1.0, z: -0.6, s: 0.95, tint: 'yellow' },
-      { kind: 'coin', x: 5.0, y: 2.9, z: -2.2, s: 0.7, tint: 'ink' },
-      { kind: 'coin', x: 1.1, y: -1.1, z: -1.8, s: 0.6, tint: 'blue' },
-      { kind: 'coin', x: 4.4, y: -2.9, z: -0.2, s: 0.8, tint: 'ink' },
+      { kind: 'coin', x: -4.2, y: -0.6, z: -0.6, s: 0.9, tint: 'yellow' },
+      { kind: 'coin', x: 4.3, y: 2.6, z: -2.2, s: 0.7, tint: 'ink' },
+      { kind: 'coin', x: 1.1, y: -0.9, z: -1.8, s: 0.6, tint: 'blue' },
+      { kind: 'coin', x: 3.9, y: -2.2, z: -0.2, s: 0.8, tint: 'ink' },
     ]
 
     const makeMaterials = () => {
@@ -236,6 +236,8 @@ export default function DiceField({ className }: { className?: string }) {
     let last = performance.now()
     let t = 0
     const tmp = new THREE.Vector3()
+    const worldPos = new THREE.Vector3()
+    const ndc = new THREE.Vector3()
 
     const step = (now: number) => {
       raf = 0
@@ -285,6 +287,34 @@ export default function DiceField({ className }: { className?: string }) {
         // Damping
         b.vel.multiplyScalar(Math.exp(-dt * 3.2))
         b.pos.addScaledVector(b.vel, dt)
+
+        b.mesh.position.copy(b.pos)
+
+        // Keep the whole object inside the frame, measured on screen so the
+        // group's lean and perspective are accounted for. Nothing slides under an edge.
+        b.mesh.getWorldPosition(worldPos)
+        const dist = camera.position.z - worldPos.z
+        const hh = Math.tan((camera.fov * Math.PI) / 360) * dist
+        const r = b.scale * group.scale.x * 0.92
+        const rx = r / (hh * camera.aspect)
+        const ry = r / hh
+        ndc.copy(worldPos).project(camera)
+        const gx = hh * camera.aspect / group.scale.x
+        const gy = hh / group.scale.x
+        if (ndc.x > 1 - rx) {
+          b.pos.x -= (ndc.x - (1 - rx)) * gx
+          b.vel.x = -Math.abs(b.vel.x) * 0.4
+        } else if (ndc.x < -1 + rx) {
+          b.pos.x += (-1 + rx - ndc.x) * gx
+          b.vel.x = Math.abs(b.vel.x) * 0.4
+        }
+        if (ndc.y > 1 - ry) {
+          b.pos.y -= (ndc.y - (1 - ry)) * gy
+          b.vel.y = -Math.abs(b.vel.y) * 0.4
+        } else if (ndc.y < -1 + ry) {
+          b.pos.y += (-1 + ry - ndc.y) * gy
+          b.vel.y = Math.abs(b.vel.y) * 0.4
+        }
         b.mesh.position.copy(b.pos)
 
         b.mesh.rotation.x += b.spin.x * dt
