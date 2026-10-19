@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import type { Attempt, Operation, SpeedArithmeticConfig } from '../../lib/types'
-import { store } from '../../lib/storage'
-import { configKey, loadConfig, OP_LABEL, saveConfig } from './generator'
-import Sparkline from '../../components/Sparkline'
-import './drill.css'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import type {
+  Attempt,
+  Operation,
+  SpeedArithmeticConfig,
+} from "../../lib/types";
+import { store } from "../../lib/storage";
+import { configKey, loadConfig, OP_LABEL, saveConfig } from "./generator";
+import Sparkline from "../../components/Sparkline";
+import FocusCard from "../../insights/FocusCard";
+import "../shared/drill.css";
 
-const DURATIONS: SpeedArithmeticConfig['durationSec'][] = [30, 60, 120, 300]
-const OPS: Operation[] = ['add', 'sub', 'mul', 'div']
+const DURATIONS: SpeedArithmeticConfig["durationSec"][] = [30, 60, 120, 300];
+const OPS: Operation[] = ["add", "sub", "mul", "div"];
 
 function Range({
   label,
@@ -15,10 +20,10 @@ function Range({
   max,
   onChange,
 }: {
-  label: string
-  min: number
-  max: number
-  onChange: (min: number, max: number) => void
+  label: string;
+  min: number;
+  max: number;
+  onChange: (min: number, max: number) => void;
 }) {
   return (
     <div className="range">
@@ -43,51 +48,58 @@ function Range({
         aria-label={`${label} maximum`}
       />
     </div>
-  )
+  );
 }
 
 export default function SpeedArithmeticConfigPage() {
-  const nav = useNavigate()
-  const [cfg, setCfg] = useState<SpeedArithmeticConfig>(loadConfig)
-  const [history, setHistory] = useState<Attempt[]>([])
+  const nav = useNavigate();
+  const [cfg, setCfg] = useState<SpeedArithmeticConfig>(loadConfig);
+  const [history, setHistory] = useState<Attempt[]>([]);
 
-  const key = configKey(cfg)
+  const key = configKey(cfg);
   useEffect(() => {
-    saveConfig(cfg)
-    store.listAttempts({ drill: 'speed-arithmetic', configKey: key, limit: 30 }).then(setHistory)
-  }, [cfg, key])
+    saveConfig(cfg);
+    store
+      .listAttempts({ drill: "speed-arithmetic", configKey: key, limit: 30 })
+      .then(setHistory);
+  }, [cfg, key]);
 
-  const best = history.reduce((m, a) => Math.max(m, a.score), 0)
-  const series = [...history].reverse().map((a) => a.score)
+  const best = history.reduce((m, a) => Math.max(m, a.score), 0);
+  const series = [...history].reverse().map((a) => a.score);
 
   const toggleOp = (op: Operation) =>
     setCfg((c) => {
-      const has = c.ops.includes(op)
-      if (has && c.ops.length === 1) return c
-      return { ...c, ops: has ? c.ops.filter((o) => o !== op) : [...c.ops, op] }
-    })
+      const has = c.ops.includes(op);
+      if (has && c.ops.length === 1) return c;
+      return {
+        ...c,
+        ops: has ? c.ops.filter((o) => o !== op) : [...c.ops, op],
+      };
+    });
 
-  const start = () => nav('/drill/speed-arithmetic/run')
+  const start = () => nav("/drill/speed-arithmetic/run");
 
   // Enter starts from anywhere on the page except inside a number field.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && !(e.target instanceof HTMLInputElement)) start()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  })
+      if (e.key === "Enter" && !(e.target instanceof HTMLInputElement)) start();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   const valid =
-    cfg.addMin <= cfg.addMax && cfg.mulLeftMin <= cfg.mulLeftMax && cfg.mulRightMin <= cfg.mulRightMax
+    cfg.addMin <= cfg.addMax &&
+    cfg.mulLeftMin <= cfg.mulLeftMax &&
+    cfg.mulRightMin <= cfg.mulRightMax;
 
   return (
     <div className="page drill-config">
       <header className="drill-head">
         <h1 className="display">Speed arithmetic</h1>
         <p className="muted">
-          One problem at a time, typed answer, no submit key. A correct answer clears itself. Score is the
-          number right before the clock stops.
+          One problem at a time, typed answer, no submit key. A correct answer
+          clears itself. Score is the number right before the clock stops.
         </p>
       </header>
 
@@ -112,13 +124,19 @@ export default function SpeedArithmeticConfigPage() {
             <h3>Operations</h3>
             <div className="chips">
               {OPS.map((op) => (
-                <button key={op} className="chip" aria-pressed={cfg.ops.includes(op)} onClick={() => toggleOp(op)}>
+                <button
+                  key={op}
+                  className="chip"
+                  aria-pressed={cfg.ops.includes(op)}
+                  onClick={() => toggleOp(op)}
+                >
                   {OP_LABEL[op]}
                 </button>
               ))}
             </div>
             <p className="faint setting__note">
-              Subtraction and division are the inverses of the ranges below, so answers stay whole and positive.
+              Subtraction and division are the inverses of the ranges below, so
+              answers stay whole and positive.
             </p>
           </div>
 
@@ -128,50 +146,74 @@ export default function SpeedArithmeticConfigPage() {
               label="Addends"
               min={cfg.addMin}
               max={cfg.addMax}
-              onChange={(min, max) => setCfg((c) => ({ ...c, addMin: min, addMax: max }))}
+              onChange={(min, max) =>
+                setCfg((c) => ({ ...c, addMin: min, addMax: max }))
+              }
             />
             <Range
               label="Small factor"
               min={cfg.mulLeftMin}
               max={cfg.mulLeftMax}
-              onChange={(min, max) => setCfg((c) => ({ ...c, mulLeftMin: min, mulLeftMax: max }))}
+              onChange={(min, max) =>
+                setCfg((c) => ({ ...c, mulLeftMin: min, mulLeftMax: max }))
+              }
             />
             <Range
               label="Large factor"
               min={cfg.mulRightMin}
               max={cfg.mulRightMax}
-              onChange={(min, max) => setCfg((c) => ({ ...c, mulRightMin: min, mulRightMax: max }))}
+              onChange={(min, max) =>
+                setCfg((c) => ({ ...c, mulRightMin: min, mulRightMax: max }))
+              }
             />
           </div>
 
           <div className="setting setting--start">
-            <button className="btn btn-primary" onClick={start} disabled={!valid}>
+            <button
+              className="btn btn-primary"
+              onClick={start}
+              disabled={!valid}
+            >
               Start
             </button>
             <span className="faint">Enter</span>
           </div>
         </section>
 
-        {history.length > 0 && (
-        <aside className="standing">
-          <h3>With these settings</h3>
-          {(
-            <>
-              <p className="standing__best">
-                <span className="tnum">{best}</span>
-                <span className="muted">best of {history.length}</span>
-              </p>
-              {series.length > 1 && (
+        <div className="drill-config__aside">
+          <FocusCard
+            drill="speed-arithmetic"
+            onApply={(p) =>
+              setCfg((c) => ({
+                ...c,
+                ...(p as Partial<SpeedArithmeticConfig>),
+              }))
+            }
+          />
+          {history.length > 0 && (
+            <aside className="standing">
+              <h3>With these settings</h3>
+              {
                 <>
-                  <Sparkline values={series} height={56} />
-                  <p className="faint">Last {Math.min(30, history.length)} runs, oldest to newest.</p>
+                  <p className="standing__best">
+                    <span className="tnum">{best}</span>
+                    <span className="muted">best of {history.length}</span>
+                  </p>
+                  {series.length > 1 && (
+                    <>
+                      <Sparkline values={series} height={56} />
+                      <p className="faint">
+                        Last {Math.min(30, history.length)} runs, oldest to
+                        newest.
+                      </p>
+                    </>
+                  )}
                 </>
-              )}
-            </>
+              }
+            </aside>
           )}
-        </aside>
-        )}
+        </div>
       </div>
     </div>
-  )
+  );
 }

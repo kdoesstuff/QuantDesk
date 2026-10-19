@@ -1,4 +1,5 @@
 import type { Operation, SpeedArithmeticConfig } from '../../lib/types'
+import { loadDrillConfig, saveDrillConfig } from '../../lib/config'
 
 export interface Problem {
   op: Operation
@@ -19,24 +20,12 @@ export const DEFAULT_CONFIG: SpeedArithmeticConfig = {
   mulRightMax: 100,
 }
 
-export const CONFIG_KEY_STORAGE = 'qd.sa.config'
-
 export function loadConfig(): SpeedArithmeticConfig {
-  try {
-    const raw = localStorage.getItem(CONFIG_KEY_STORAGE)
-    if (raw) return { ...DEFAULT_CONFIG, ...(JSON.parse(raw) as Partial<SpeedArithmeticConfig>) }
-  } catch {
-    /* fall through */
-  }
-  return DEFAULT_CONFIG
+  return loadDrillConfig('speed-arithmetic', DEFAULT_CONFIG)
 }
 
 export function saveConfig(c: SpeedArithmeticConfig) {
-  try {
-    localStorage.setItem(CONFIG_KEY_STORAGE, JSON.stringify(c))
-  } catch {
-    /* ignore */
-  }
+  saveDrillConfig('speed-arithmetic', c)
 }
 
 export function configKey(c: SpeedArithmeticConfig) {

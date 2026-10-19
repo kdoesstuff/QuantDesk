@@ -2,9 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { scaleLinear, scaleTime, line as d3line, curveMonotoneX, extent, timeFormat } from 'd3'
 import { store } from '../lib/storage'
-import type { Attempt, SpeedArithmeticConfig } from '../lib/types'
-import { OP_SIGN } from '../drills/speedArithmetic/generator'
+import type { Attempt } from '../lib/types'
+import { drillMeta } from '../drills/registry'
+import { analyze, type Finding } from '../insights/analyze'
+import { listFocus, progress as focusProgress } from '../insights/focus'
+import { FindingCard } from '../insights/InsightsPanel'
+import { pct, secs } from '../insights/stats'
 import './progress.css'
+import '../insights/insights.css'
 
 function dayKey(ts: number) {
   const d = new Date(ts)
@@ -138,10 +143,11 @@ function ScoreChart({ attempts }: { attempts: Attempt[] }) {
   )
 }
 
-function describeConfig(c: SpeedArithmeticConfig) {
-  const ops = c.ops.map((o) => OP_SIGN[o]).join(' ')
-  const dur = c.durationSec < 60 ? `${c.durationSec}s` : `${c.durationSec / 60} min`
-  return `${dur}, ${ops}, ${c.addMin}–${c.addMax}, ${c.mulLeftMin}–${c.mulLeftMax} × ${c.mulRightMin}–${c.mulRightMax}`
+function describe(a: Attempt) {
+  return drillMeta(a.drill).describe(a.config)
+}
+function groupKey(a: Attempt) {
+  return `${a.drill}|${a.configKey}`
 }
 
 export default function Progress() {
@@ -156,8 +162,9 @@ export default function Progress() {
   const groups = useMemo(() => {
     const m = new Map<string, Attempt[]>()
     for (const a of attempts ?? []) {
-      if (!m.has(a.configKey)) m.set(a.configKey, [])
-      m.get(a.configKey)!.push(a)
+      const k = groupKey(a)
+      if (!m.has(k)) m.set(k, [])
+      m.get(k)!.push(a)
     }
     return [...m.entries()].sort((x, y) => y[1].length - x[1].length)
   }, [attempts])
@@ -165,6 +172,22 @@ export default function Progress() {
   useEffect(() => {
     if (!configKey && groups.length) setConfigKey(groups[0][0])
   }, [groups, configKey])
+
+  // One finding per drill, the strongest, for the work list.
+  const work = useMemo(() => {
+    const out: Finding[] = []
+    const byDrill = new Map<string, Attempt[]>()
+    for (const a of attempts ?? []) {
+      if (!byDrill.has(a.drill)) byDrill.set(a.drill, [])
+      byDrill.get(a.drill)!.push(a)
+    }
+    for (const list of byDrill.values()) {
+      const top = analyze(list[0].drill, list, list[0]).findings.find((f) => f.kind !== 'strength' && f.kind !== 'today')
+      if (top) out.push(top)
+    }
+    return out.sort((x, y) => y.severity - x.severity)
+  }, [attempts])
+  const blocks = useMemo(() => listFocus().filter((b) => b.status === 'active'), [])
 
   if (attempts === null) return null
 
@@ -197,10 +220,49 @@ export default function Progress() {
         <h1 className="display progress__title">Progress</h1>
         <p className="muted">
           {attempts.length} {attempts.length === 1 ? 'run' : 'runs'} on {days} {days === 1 ? 'day' : 'days'},{' '}
-          {totalProblems.toLocaleString()} problems right, about {minutes} {minutes === 1 ? 'minute' : 'minutes'} on
+          {totalProblems.toLocaleString()} right answers, about {minutes} {minutes === 1 ? 'minute' : 'minutes'} on
           the clock.
         </p>
       </header>
+
+      {(blocks.length > 0 || work.length > 0) && (
+        <section className="progress__section">
+          <h2>What to work on</h2>
+          {blocks.length > 0 && (
+            <ul className="worklist">
+              {blocks.map((b) => {
+                const p = focusProgress(b, attempts)
+                const isSpeed = b.kind === 'slow'
+                return (
+                  <li key={b.id}>
+                    <span className="worklist__drill">Focus block, {drillMeta(b.drill).label}</span>
+                    <span className="worklist__headline">{b.label}</span>
+                    <span className="muted tnum">
+                      {b.runIds.length} {b.runIds.length === 1 ? 'run' : 'runs'}
+                      {p.current !== null ? `, last three ${isSpeed ? secs(p.current) : pct(p.current)} against a target of ${isSpeed ? secs(b.target.medMs!) : pct(b.target.acc!)}` : ''}.
+                    </span>
+                    <Link to={`/drill/${b.drill}`}>Open</Link>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+          {work.length > 0 && (
+            <div className="findings">
+              {work.slice(0, 5).map((f) => (
+                <div key={f.id} className="worklist__item">
+                  <span className="worklist__drill">
+                    <Link to={`/drill/${f.drill}`}>{drillMeta(f.drill).label}</Link>
+                  </span>
+                  <ul className="findings">
+                    <FindingCard f={f} />
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="progress__section">
         <h2>Days</h2>
@@ -214,14 +276,16 @@ export default function Progress() {
             <select className="input progress__select" value={configKey ?? ''} onChange={(e) => setConfigKey(e.target.value)}>
               {groups.map(([k, list]) => (
                 <option key={k} value={k}>
-                  {describeConfig(list[0].config as SpeedArithmeticConfig)} ({list.length})
+                  {drillMeta(list[0].drill).label}: {describe(list[0])} ({list.length})
                 </option>
               ))}
             </select>
           )}
         </div>
         {groups.length === 1 && (
-          <p className="muted">{describeConfig(groups[0][1][0].config as SpeedArithmeticConfig)}</p>
+          <p className="muted">
+            {drillMeta(groups[0][1][0].drill).label}, {describe(groups[0][1][0])}
+          </p>
         )}
         <ScoreChart attempts={selected} />
       </section>
@@ -231,6 +295,7 @@ export default function Progress() {
         <table className="bests tnum">
           <thead>
             <tr>
+              <th>Drill</th>
               <th>Settings</th>
               <th>Runs</th>
               <th>Best</th>
@@ -239,15 +304,19 @@ export default function Progress() {
           </thead>
           <tbody>
             {groups.map(([k, list]) => {
-              const best = Math.max(...list.map((a) => a.score))
+              const meta = drillMeta(list[0].drill)
+              const scores = list.map((a) => a.score)
+              const best = meta.higherIsBetter === false ? Math.min(...scores) : Math.max(...scores)
               const latest = list[0]
+              const f = (x: number) => (Number.isInteger(x) ? String(x) : x.toFixed(1)) + (meta.unit ?? '')
               return (
                 <tr key={k}>
-                  <td>{describeConfig(list[0].config as SpeedArithmeticConfig)}</td>
+                  <td>{meta.label}</td>
+                  <td className="muted">{describe(list[0])}</td>
                   <td>{list.length}</td>
-                  <td>{best}</td>
+                  <td>{f(best)}</td>
                   <td>
-                    <Link to={`/drill/speed-arithmetic/result/${latest.id}`}>{latest.score}</Link>
+                    <Link to={`/drill/${latest.drill}/result/${latest.id}`}>{f(latest.score)}</Link>
                   </td>
                 </tr>
               )

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { scaleLinear, scaleBand, line as d3line, curveMonotoneX, median } from 'd3'
-import type { Attempt, Operation, SpeedArithmeticConfig } from '../../lib/types'
+import type { AnswerLog, Attempt, Operation, SpeedArithmeticConfig } from '../../lib/types'
 import { store } from '../../lib/storage'
 import { OP_LABEL, OP_SIGN } from './generator'
-import './drill.css'
+import InsightsPanel from '../../insights/InsightsPanel'
+import '../shared/drill.css'
 
 function PaceChart({ ms, ops }: { ms: number[]; ops: Operation[] }) {
   const W = 640
@@ -100,7 +101,8 @@ export default function SpeedArithmeticResult() {
 
   const stats = useMemo(() => {
     if (!attempt) return null
-    const answered = attempt.answers.filter((l) => l.given !== null)
+    const logs = attempt.answers as AnswerLog[]
+    const answered = logs.filter((l) => l.given !== null)
     const byOp = (['add', 'sub', 'mul', 'div'] as Operation[])
       .filter((op) => attempt.config.ops.includes(op))
       .map((op) => {
@@ -113,7 +115,7 @@ export default function SpeedArithmeticResult() {
           medMs: rows.length ? median(rows.map((r) => r.ms))! : 0,
         }
       })
-    const slips = attempt.answers.filter((l) => l.misses > 0)
+    const slips = logs.filter((l) => l.misses > 0)
     return { answered, byOp, slips }
   }, [attempt])
 
@@ -162,6 +164,8 @@ export default function SpeedArithmeticResult() {
           Change settings
         </Link>
       </div>
+
+      <InsightsPanel drill="speed-arithmetic" attempt={attempt} />
 
       <section className="result__section">
         <h2>Pace</h2>

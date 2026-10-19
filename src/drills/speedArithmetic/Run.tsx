@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { AnswerLog, Attempt, SpeedArithmeticConfig } from '../../lib/types'
 import { store, uid } from '../../lib/storage'
 import { configKey, loadConfig, nextProblem, type Problem } from './generator'
-import './drill.css'
+import '../shared/drill.css'
 
 type Phase = 'countdown' | 'running' | 'done'
 
