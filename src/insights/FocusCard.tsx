@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Attempt, DrillId } from '../lib/types'
 import { store } from '../lib/storage'
 import { loadDrillConfig } from '../lib/config'
-import { analyze, type Finding } from './analyze'
+import { analyze, INSIGHTS_AFTER, type Finding } from './analyze'
 import { activeFocus, listFocus, matchesPatch, progress, startFocus, stopFocus, type FocusBlock, type FocusProgress } from './focus'
 import { recommend } from './recommend'
 import { pct, secs } from './stats'
@@ -129,5 +129,49 @@ export default function FocusCard({ drill, onApply }: { drill: DrillId; onApply:
       </aside>
     )
   }
-  return null
+  // Nothing to show yet: say what it takes, in plain numbers.
+  const events = history.reduce((n, a) => n + a.answers.filter((l) => l.given !== null).length, 0)
+  const perRun = history.length ? Math.max(1, Math.round(events / history.length)) : EVENTS_PER_RUN[drill] ?? 40
+  const runsLeft = Math.max(0, Math.ceil((INSIGHTS_AFTER - events) / perRun))
+  return (
+    <aside className="standing insights-note">
+      <h3>Insights</h3>
+      {events < INSIGHTS_AFTER ? (
+        <>
+          <p className="faint">
+            Play about {runsLeft} {runsLeft === 1 ? 'more run' : 'more runs'} to start getting insights into your weak spots
+            {events > 0 ? ` (${events} of ${INSIGHTS_AFTER} problems so far)` : ''}.
+          </p>
+          <p className="faint">After that a focus mode appears here, with settings built to improve.</p>
+        </>
+      ) : (
+        <>
+          <p className="faint">
+            Insights are on: {history.length} runs, {events} problems. No weak spot stands out yet; a focus mode appears here as soon as one does.
+          </p>
+        </>
+      )}
+    </aside>
+  )
+}
+
+/** Rough problems per run at default settings, used before there is history. */
+const EVENTS_PER_RUN: Partial<Record<DrillId, number>> = {
+  'speed-arithmetic': 50,
+  'eighty-in-eight': 80,
+  sequences: 25,
+  fractions: 35,
+  percentages: 30,
+  'dice-market': 20,
+  'cards-market': 20,
+  'make-a-market': 10,
+  'betting-board': 10,
+  kelly: 30,
+  'etf-arb': 25,
+  'event-contracts': 20,
+  fermi: 10,
+  'memory-grid': 10,
+  'task-switch': 96,
+  intercept: 20,
+  balloon: 30,
 }

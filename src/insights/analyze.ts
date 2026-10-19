@@ -11,6 +11,9 @@ import { mean, median, medianRatioCI, pct, secs, signZ, trend, twoPropZ, wilson 
  * carries the sample it rests on, and nothing is reported below the
  * minimum samples set here.
  */
+/** Problems logged before the engine starts reporting at all. */
+export const INSIGHTS_AFTER = 100
+
 /** Category tests are many, so they use stricter cutoffs than the single tests. */
 export const CUT = {
   /** z for a category accuracy gap (about 1 percent one-sided). */

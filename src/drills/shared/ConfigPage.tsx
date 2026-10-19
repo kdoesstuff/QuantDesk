@@ -4,6 +4,7 @@ import type { DrillId } from '../../lib/types'
 import { useDrillConfig } from '../../lib/config'
 import { ConfigFrame, Standing } from './Frames'
 import FocusCard from '../../insights/FocusCard'
+import RunLog from './RunLog'
 
 /** What every drill spec shares, enough for the settings page. */
 export interface BaseSpec<C extends object> {
@@ -31,6 +32,7 @@ export default function ConfigPage<C extends object>({ spec }: { spec: BaseSpec<
       blurb={spec.blurb}
       onStart={start}
       valid={valid}
+      below={<RunLog drill={spec.id} currentKey={key} />}
       aside={
         <div className="drill-config__aside">
           <FocusCard drill={spec.id} onApply={(c) => setCfg((cur) => ({ ...cur, ...(c as Partial<C>) }))} />

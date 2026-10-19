@@ -53,6 +53,7 @@ export function ConfigFrame({
   blurb,
   children,
   aside,
+  below,
   onStart,
   valid = true,
   startLabel = 'Start',
@@ -61,6 +62,8 @@ export function ConfigFrame({
   blurb: ReactNode
   children: ReactNode
   aside?: ReactNode
+  /** Rendered under the settings grid, full width. */
+  below?: ReactNode
   onStart: () => void
   valid?: boolean
   startLabel?: string
@@ -84,6 +87,7 @@ export function ConfigFrame({
         </section>
         {aside}
       </div>
+      {below}
     </div>
   )
 }

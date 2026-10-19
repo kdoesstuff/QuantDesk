@@ -206,3 +206,12 @@
 .worklist__item .finding {
   list-style: none;
 }
+.insights-note {
+  background: transparent;
+  border: 1px dashed var(--ground-4);
+}
+.insights-note .faint {
+  font-size: var(--t-1);
+  font-weight: 300;
+  line-height: 1.5;
+}

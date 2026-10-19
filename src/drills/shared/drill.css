@@ -884,3 +884,50 @@
   align-items: center;
   gap: var(--s-4);
 }
+
+/* Run log ------------------------------------------------------------------- */
+.runlog {
+  margin-top: var(--s-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  max-width: 760px;
+}
+.runlog__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+}
+.seg--small button {
+  padding: 4px 12px;
+  font-size: var(--t-0);
+}
+.runlog__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.runlog__body .faint {
+  font-size: var(--t-0);
+}
+.runlog__table td:first-child {
+  white-space: nowrap;
+}
+.runlog__table tr.is-current td:first-child {
+  color: var(--yellow);
+}
+.runlog__best {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-left: 6px;
+}
+@media (max-width: 860px) {
+  .runlog__table th:nth-child(2),
+  .runlog__table td:nth-child(2) {
+    display: none;
+  }
+}

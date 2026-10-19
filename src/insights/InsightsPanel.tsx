@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import type { Attempt, DrillId } from '../lib/types'
 import { store } from '../lib/storage'
 import { loadDrillConfig, saveDrillConfig } from '../lib/config'
-import { analyze, percentile, type Finding } from './analyze'
+import { analyze, INSIGHTS_AFTER, percentile, type Finding } from './analyze'
 import { noteRun, startFocus, type FocusProgress } from './focus'
 import { recommend } from './recommend'
 import { secs, pct } from './stats'
@@ -127,7 +127,7 @@ export default function InsightsPanel({ drill, attempt }: { drill: DrillId; atte
         </ul>
       ) : (
         <p className="muted">
-          {total < 100 ? `Insights start once there is enough to be sure of: about 100 problems, ${total} so far.` : 'Nothing stands out yet. Categories are within noise of each other, no fade, no lean. Keep the sample growing.'}
+          {total < INSIGHTS_AFTER ? `Insights start once there is enough to be sure of: ${INSIGHTS_AFTER} problems, ${total} so far.` : 'Nothing stands out yet. Categories are within noise of each other, no fade, no lean. Keep the sample growing.'}
         </p>
       )}
     </section>
