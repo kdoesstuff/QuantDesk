@@ -22,9 +22,6 @@ const descriptions: Record<string, string> = {
   '/drill/task-switch': 'Two rules, one stimulus, no warning when the rule changes.',
   '/drill/intercept': 'Lead a falling target with a cannon that has travel time.',
   '/drill/balloon': 'Pump for money, stop before it pops, learn the colours.',
-  '/bank': 'Probability, expected value, Markov chains, brainteasers, with hints and full solutions.',
-  '/mock': 'Firm-format timed sets: DRW, Citadel, SIG, Mako.',
-  '/techniques': 'The moves behind the problems, scheduled for review when you slip.',
 }
 
 export default function Home() {
