@@ -90,10 +90,5 @@
   background: var(--ground-3);
 }
 
-@media (max-width: 860px) {
-  .tp__menu {
-    right: auto;
-    left: 0;
-    transform-origin: top left;
-  }
-}
+/* In the phone drawer the picker sits near the right edge, so the menu keeps
+   opening leftwards from the trigger and stays inside the drawer. */

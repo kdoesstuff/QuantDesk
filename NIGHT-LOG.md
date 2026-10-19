@@ -89,3 +89,4 @@ Done.
 - Phones: run screens have a Stop button; prompts and choice buttons wrap; the run grid can no longer widen the page; key hints hidden on touch screens; Bests table spacing.
 - Production page: content security policy injected at build time, referrer policy, description and social tags, manifest and icons for install to home screen, `robots.txt`, theme bootstrap moved out of inline script. Three.js is loaded lazily on the home page only; D3 and Three are their own chunks.
 - Checks: `npm run check` (typecheck, lint, `scripts/check-storage.mjs`), run by the deploy workflow before building. `npm run smoke` opens every page at 1440 and 390 and reports errors and overflow.
+- Desktop sidebar can be hidden and shown (panel button, remembered). The theme menu in the phone drawer opens inward so it is no longer clipped.

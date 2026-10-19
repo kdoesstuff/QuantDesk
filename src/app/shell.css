@@ -4,6 +4,48 @@
   min-height: 100dvh;
   position: relative;
   z-index: 1;
+  transition: grid-template-columns var(--dur-base) var(--ease);
+}
+
+/* Desktop: the sidebar can be tucked away. The column shrinks to nothing and
+   the rail slides out behind it; a small button in the corner brings it back. */
+.shell--hidden {
+  grid-template-columns: 0 1fr;
+}
+.shell--hidden .rail {
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform var(--dur-base) var(--ease), visibility 0s linear var(--dur-base);
+}
+/* With the sidebar away, the page keeps clear of the corner button and sits centred. */
+.shell--hidden .content {
+  padding-left: max(var(--gutter), 76px);
+}
+.shell--hidden .page {
+  margin-inline: auto;
+}
+.rail-show {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 30;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-content: center;
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: color-mix(in srgb, var(--ground) 80%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--ground-3);
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), transform var(--dur-base) var(--ease);
+}
+.rail-show:hover {
+  color: var(--ink);
+  background: var(--ground-2);
+}
+.rail-show:active {
+  transform: scale(0.94);
 }
 
 .brand {
@@ -53,6 +95,7 @@
   position: sticky;
   top: 0;
   height: 100dvh;
+  width: var(--rail-w);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -61,6 +104,7 @@
   flex-direction: column;
   gap: var(--s-6);
   border-right: 1px solid var(--ground-3);
+  transition: transform var(--dur-base) var(--ease), visibility 0s;
 }
 .rail__head {
   display: flex;
@@ -68,22 +112,36 @@
   justify-content: space-between;
   gap: var(--s-2);
 }
+.rail__brand {
+  white-space: nowrap;
+  min-width: 0;
+}
 .rail__tools {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: 2px;
+  flex: none;
+  margin-right: -6px;
 }
 .rail__close {
-  display: none;
-  width: 36px;
-  height: 36px;
+  display: grid;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
-  color: var(--ink-2);
+  color: var(--ink-3);
   place-content: center;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
 .rail__close:hover {
   color: var(--ink);
   background: var(--ground-2);
+}
+/* Desktop shows the panel icon (hide sidebar), the phone drawer shows an X. */
+.rail__close-x {
+  display: none;
+}
+.rail__close-panel {
+  display: grid;
 }
 
 .rail__nav {
@@ -206,8 +264,22 @@
   .rail__head {
     justify-content: space-between;
   }
-  .rail__close {
-    display: grid;
+  .rail__close-x {
+    display: block;
+  }
+  .rail__close-panel {
+    display: none;
+  }
+  /* The desktop collapse never applies to the drawer. */
+  .shell--hidden {
+    grid-template-columns: 1fr;
+  }
+  .shell--hidden .rail {
+    transform: translateX(-104%);
+  }
+  .shell--hidden .rail--open {
+    transform: translateX(0);
+    visibility: visible;
   }
   .scrim {
     display: block;
@@ -232,8 +304,10 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .shell,
   .rail,
   .scrim,
+  .rail-show,
   .topbar__menu span {
     transition: none;
   }

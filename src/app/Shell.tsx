@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Lenis from 'lenis'
 import { sections } from './sections'
 import { useTheme } from '../lib/theme'
+import { readString, writeString } from '../lib/persist'
 import ThemePicker from '../components/ThemePicker'
 import './shell.css'
 
@@ -104,22 +105,53 @@ function useMedia(query: string) {
   return match
 }
 
+/** A panel icon for the sidebar toggle: a box with a bar down its left side. */
+function PanelIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <rect x="2" y="3.25" width="14" height="11.5" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M6.75 3.5v11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+const RAIL_KEY = 'qd.rail'
+
 export default function Shell() {
   const [theme, setTheme] = useTheme()
+  // Phone drawer: open or closed, never remembered.
   const [open, setOpen] = useState(false)
+  // Desktop sidebar: shown or hidden, remembered across visits.
+  const [hidden, setHidden] = useState(() => readString(RAIL_KEY) === 'hidden')
   const loc = useLocation()
   const focus = loc.pathname.endsWith('/run')
 
   const narrow = useMedia('(max-width: 860px)')
   const close = useCallback(() => setOpen(false), [])
+  const toggleHidden = useCallback(() => {
+    setHidden((h) => {
+      writeString(RAIL_KEY, h ? 'shown' : 'hidden')
+      return !h
+    })
+  }, [])
   useSpotlight()
   useSmoothScroll(loc.pathname, open && narrow)
   useDrawer(open, close)
   useEffect(() => setOpen(false), [loc.pathname])
 
+  // What the rail's own button does depends on which layout is live.
+  const railButton = narrow ? close : toggleHidden
+  const railInert = narrow ? !open : hidden
+
   return (
-    <div className={'shell' + (focus ? ' shell--focus' : '')}>
+    <div className={'shell' + (focus ? ' shell--focus' : '') + (hidden ? ' shell--hidden' : '')}>
       <div className="spot" aria-hidden="true" />
+
+      {!narrow && hidden && !focus && (
+        <button className="rail-show" aria-label="Show sidebar" aria-controls="rail" aria-expanded={false} onClick={toggleHidden}>
+          <PanelIcon />
+        </button>
+      )}
 
       <header className="topbar">
         <button
@@ -138,7 +170,7 @@ export default function Shell() {
         </NavLink>
       </header>
 
-      <aside id="rail" className={'rail no-scrollbar' + (open ? ' rail--open' : '')} data-lenis-prevent inert={narrow && !open}>
+      <aside id="rail" className={'rail no-scrollbar' + (open ? ' rail--open' : '')} data-lenis-prevent inert={railInert}>
         <div className="rail__head">
           <NavLink to="/" className="brand rail__brand">
             <Mark />
@@ -146,10 +178,18 @@ export default function Shell() {
           </NavLink>
           <div className="rail__tools">
             <ThemePicker value={theme} onChange={setTheme} />
-            <button className="rail__close" aria-label="Close menu" onClick={close}>
-              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+            <button
+              className="rail__close"
+              aria-label={narrow ? 'Close menu' : 'Hide sidebar'}
+              title={narrow ? undefined : 'Hide sidebar'}
+              onClick={railButton}
+            >
+              <svg className="rail__close-x" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
                 <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
               </svg>
+              <span className="rail__close-panel">
+                <PanelIcon />
+              </span>
             </button>
           </div>
         </div>
