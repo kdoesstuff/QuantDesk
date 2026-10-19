@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * A faint Galton board that fills the section behind it. Balls fall slowly
- * through pegs and pile up at the bottom. Drawn at low contrast so text on top
- * stays readable. Moving the cursor across the section biases the coin a
- * little. Canvas, capped pixel ratio, pauses when off screen.
+ * A faint Galton board that fills the section behind it. The board starts
+ * empty. Balls fall through the pegs and the pile grows bin by bin until the
+ * bell shape is clearly there, then the pile fades out and the run starts
+ * again. Drawn at low contrast so text on top stays readable. Moving the
+ * cursor across the section biases the coin a little. Canvas, capped pixel
+ * ratio, pauses when off screen.
  */
 export default function GaltonBackdrop({ className }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -21,6 +23,7 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
     let rows = 20
     let BINS = rows + 1
     let pegGap = 44
+    let rowGap = 44
     let topY = 0
     let binBottom = 0
     let cx = 0
@@ -39,7 +42,39 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
     let p = 0.5
     let pTarget = 0.5
 
+    // Lifecycle of one run. fill: drop balls until the shape is clear.
+    // settle: stop dropping, let the ones in flight land. hold: keep the
+    // finished shape on screen for a moment. fade: dissolve the pile, then
+    // start over.
+    type Phase = 'fill' | 'settle' | 'hold' | 'fade'
+    let phase: Phase = 'fill'
+    let phaseT = 0
+    let runT = 0
+    let pileAlpha = 1
+    // Tallest bin, eased so the pile rescales smoothly as it grows.
+    let shownMax = 6
+
+    const SPAWN_EVERY = 0.09
+    const IN_FLIGHT = 64
+    const HOLD_FOR = 2.4
+    const FADE_FOR = 1.4
+    const MAX_RUN = 80
+
+    // Enough balls that the bell is unmistakable for this many bins.
+    const targetFor = (bins: number) => Math.round(Math.max(240, Math.min(420, bins * 14)))
+
     const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
+    const resetRun = () => {
+      counts = new Array<number>(BINS).fill(0)
+      total = 0
+      balls.length = 0
+      shownMax = 6
+      pileAlpha = 1
+      phase = 'fill'
+      phaseT = 0
+      runT = 0
+    }
 
     const layout = () => {
       W = canvas.clientWidth || 1
@@ -47,31 +82,55 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
       canvas.width = Math.round(W * dpr)
       canvas.height = Math.round(H * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      // Pegs fill about 70% of the height; the pile takes the rest.
-      pegGap = W < 720 ? 30 : 44
-      rows = Math.max(8, Math.min(40, Math.floor((H - 260) / pegGap)))
-      // Never wider than the section.
-      while ((rows + 2) * pegGap > W * 0.96 && pegGap > 18) pegGap -= 2
+      // The board always fits the width. Rows are spaced a little taller
+      // than they are wide so the pegs fill most of the section's height on
+      // narrow screens without spilling past its edges.
+      pegGap = W < 720 ? 24 : 44
+      const byWidth = () => Math.floor((W * 0.96) / pegGap) - 2
+      while (byWidth() < 8 && pegGap > 16) pegGap -= 2
+      const byHeight = Math.floor((H - 260) / pegGap)
+      rows = Math.max(6, Math.min(40, Math.min(byWidth(), byHeight)))
+      rowGap = Math.max(pegGap, Math.min(pegGap * 2.2, (H * 0.72) / rows))
       BINS = rows + 1
       cx = W / 2
       topY = H * 0.06
       binBottom = H - 10
       if (counts.length !== BINS) {
-        counts = new Array<number>(BINS).fill(0)
-        total = 0
-        balls.length = 0
-        // Start with a shape already present
-        for (let i = 0; i < 260; i++) {
-          let c = 0
-          for (let r = 0; r < rows; r++) if (Math.random() < 0.5) c++
-          counts[c]++
-          total++
+        resetRun()
+        if (reduce) {
+          // No animation: show a finished shape instead of an empty board.
+          for (let i = 0; i < targetFor(BINS); i++) {
+            let c = 0
+            for (let r = 0; r < rows; r++) if (Math.random() < 0.5) c++
+            counts[c]++
+            total++
+          }
+          shownMax = Math.max(6, ...counts)
         }
       }
     }
     const pegX = (row: number, col: number) => cx + (col - row / 2) * pegGap
-    const pegY = (row: number) => topY + row * pegGap
+    const pegY = (row: number) => topY + row * rowGap
     const binX = (i: number) => cx + (i - rows / 2) * pegGap
+    const pileH = () => {
+      const binTop = pegY(rows) + rowGap * 0.6
+      return Math.max(40, Math.min(220, binBottom - binTop))
+    }
+    const barH = (i: number) => (counts[i] / shownMax) * pileH()
+
+    // A bar with a rounded top, so the pile has no hard corners.
+    const bar = (x: number, w: number, h: number) => {
+      const r = Math.min(w / 2, h)
+      ctx.beginPath()
+      ctx.moveTo(x, binBottom)
+      ctx.lineTo(x, binBottom - h + r)
+      ctx.arc(x + r, binBottom - h + r, r, Math.PI, Math.PI * 1.5)
+      ctx.lineTo(x + w - r, binBottom - h)
+      ctx.arc(x + w - r, binBottom - h + r, r, Math.PI * 1.5, Math.PI * 2)
+      ctx.lineTo(x + w, binBottom)
+      ctx.closePath()
+      ctx.fill()
+    }
 
     const draw = () => {
       const blue = css('--blue-2')
@@ -92,22 +151,19 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
         }
       }
 
-      // Pile, faint
-      const binTop = pegY(rows) + pegGap * 0.6
-      const binH = Math.max(40, Math.min(220, binBottom - binTop))
-      const maxCount = Math.max(6, ...counts)
+      // Pile, faint. Fades out at the end of a run.
       const bw = pegGap - Math.max(3, pegGap * 0.24)
       ctx.fillStyle = blue
-      ctx.globalAlpha = 0.22
+      ctx.globalAlpha = 0.26 * pileAlpha
       for (let i = 0; i < BINS; i++) {
-        const h = (counts[i] / maxCount) * binH
-        if (h <= 0) continue
-        ctx.fillRect(binX(i) - bw / 2, binBottom - h, bw, h)
+        const h = barH(i)
+        if (h <= 0.5) continue
+        bar(binX(i) - bw / 2, bw, h)
       }
 
       // Balls, a little brighter than the rest
       const rad = Math.max(2.2, pegGap * 0.11)
-      ctx.globalAlpha = 0.55
+      ctx.globalAlpha = 0.55 * pileAlpha
       for (const b of balls) {
         let x: number
         let y: number
@@ -118,7 +174,7 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
           const y1 = pegY(b.row + 1)
           const e = b.t
           x = x0 + (x1 - x0) * e
-          y = y0 + (y1 - y0) * (e * e) - Math.sin(e * Math.PI) * pegGap * 0.2
+          y = y0 + (y1 - y0) * (e * e) - Math.sin(e * Math.PI) * rowGap * 0.2
         } else {
           x = binX(b.col)
           y = b.y
@@ -141,15 +197,30 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
       p += (pTarget - p) * (1 - Math.exp(-dt * 2))
+      phaseT += dt
+      runT += dt
 
-      acc += dt
-      while (acc > 0.22 && balls.length < 40) {
-        acc -= 0.22
-        balls.push({ row: 0, col: 0, t: 0, dir: Math.random() < p ? 1 : -1, binning: false, y: 0 })
+      // Drop balls only while filling.
+      if (phase === 'fill') {
+        acc += dt
+        while (acc > SPAWN_EVERY && balls.length < IN_FLIGHT) {
+          acc -= SPAWN_EVERY
+          balls.push({ row: 0, col: 0, t: 0, dir: Math.random() < p ? 1 : -1, binning: false, y: 0 })
+        }
+        if (total >= targetFor(BINS) || runT > MAX_RUN) {
+          phase = 'settle'
+          phaseT = 0
+        }
+      } else {
+        acc = 0
       }
 
-      const binTop = pegY(rows) + pegGap * 0.6
-      const binH = Math.max(40, Math.min(220, binBottom - binTop))
+      // Ease the pile scale toward the real tallest bin.
+      const maxCount = Math.max(6, ...counts)
+      shownMax += (maxCount - shownMax) * (1 - Math.exp(-dt * 4))
+
+      const ph = pileH()
+      const fall = Math.max(420, (binBottom - pegY(rows)) / 2.4)
       for (let i = balls.length - 1; i >= 0; i--) {
         const b = balls[i]
         if (!b.binning) {
@@ -165,19 +236,27 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
             }
           }
         } else {
-          b.y += dt * 420
-          const maxCount = Math.max(6, ...counts)
-          const h = (counts[b.col] / maxCount) * binH
-          if (b.y >= binBottom - h - 3) {
+          b.y += dt * fall
+          // Land on top of this bin's bar, so the ball visibly joins the pile.
+          const h = (counts[b.col] / shownMax) * ph
+          if (b.y >= binBottom - h - 2) {
             counts[b.col]++
             total++
             balls.splice(i, 1)
           }
         }
       }
-      if (total > 1600) {
-        for (let i = 0; i < BINS; i++) counts[i] = Math.round(counts[i] * 0.5)
-        total = counts.reduce((a, c) => a + c, 0)
+
+      if (phase === 'settle' && balls.length === 0) {
+        phase = 'hold'
+        phaseT = 0
+      } else if (phase === 'hold' && phaseT >= HOLD_FOR) {
+        phase = 'fade'
+        phaseT = 0
+      } else if (phase === 'fade') {
+        const u = Math.min(1, phaseT / FADE_FOR)
+        pileAlpha = 1 - u * u * (3 - 2 * u)
+        if (u >= 1) resetRun()
       }
 
       draw()
@@ -219,11 +298,18 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
     ro.observe(canvas)
     const io = new IntersectionObserver(([en]) => {
       visible = en.isIntersecting
-      if (visible && !reduce) schedule()
+      if (visible && !reduce) {
+        // Do not count time spent off screen.
+        last = performance.now()
+        schedule()
+      }
     })
     io.observe(canvas)
     const onVis = () => {
-      if (!document.hidden && visible && !reduce) schedule()
+      if (!document.hidden && visible && !reduce) {
+        last = performance.now()
+        schedule()
+      }
     }
     document.addEventListener('visibilitychange', onVis)
     const mo = new MutationObserver(draw)
