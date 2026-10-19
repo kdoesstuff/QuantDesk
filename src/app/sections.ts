@@ -51,12 +51,4 @@ export const sections: SectionGroup[] = [
       { to: '/drill/balloon', label: 'Balloon', status: 'live' },
     ],
   },
-  {
-    title: 'Problems',
-    links: [
-      { to: '/bank', label: 'Question bank', status: 'soon' },
-      { to: '/mock', label: 'Timed mocks', status: 'soon' },
-      { to: '/techniques', label: 'Techniques', status: 'soon' },
-    ],
-  },
 ]
