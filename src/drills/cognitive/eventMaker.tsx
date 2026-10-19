@@ -128,6 +128,27 @@ function Run({ cfg, onDone, onQuit }: { cfg: MakerConfig; onDone: (f: Finished) 
     roundPnl.current += pnl
     const prev = tape[tape.length - 1]
     const mid = (bid + ask) / 2
+    const pq = Math.round(qNow * 100)
+    const how =
+      e >= 0
+        ? undefined
+        : `Your belief after ${tape.length} ${tape.length === 1 ? 'trader' : 'traders'} was ${pq}% (${
+            prev
+              ? prev.action === 'buy'
+                ? `the last buy at ${prev.ask} raised it, since ${Math.round(mu * 100)}% of buyers know the answer`
+                : prev.action === 'sell'
+                  ? `the last sell at ${prev.bid} lowered it`
+                  : 'the last trader passed, which says little'
+              : 'the prior'
+          }). A quote earns from noise traders inside the spread and loses to informed ones, so the ask must sit above ${pq} by enough to cover the ${Math.round(mu * 100)}% chance the buyer knows YES, and the bid below by the same logic. Best quote here: ${opt.bid} at ${opt.ask}, worth +${opt.e.toFixed(1)}c a trader. Yours, ${bid} at ${ask}, was worth ${e.toFixed(1)}c${
+            ask - bid < opt.ask - opt.bid - 6
+              ? ': too tight, informed flow picks it off'
+              : ask - bid > opt.ask - opt.bid + 6
+                ? ': too wide, noise traders do not trade'
+                : Math.abs(mid - 100 * qNow) > 5
+                  ? `: the mid ${mid} sits ${mid > 100 * qNow ? 'above' : 'below'} your belief ${pq}, so one side is giving edge away`
+                  : '.'
+          }`
     logs.current.push({
       kind: 'quote',
       prompt: `prior ${Math.round(prior * 100)}, trader ${tape.length + 1}`,
@@ -137,6 +158,7 @@ function Run({ cfg, onDone, onQuit }: { cfg: MakerConfig; onDone: (f: Finished) 
       misses: 0,
       correct: e >= 0,
       points: round(e, 1),
+      how,
       tags: {
         expected: round(e, 1),
         optimalExpected: round(opt.e, 1),
@@ -163,7 +185,9 @@ function Run({ cfg, onDone, onQuit }: { cfg: MakerConfig; onDone: (f: Finished) 
     if (nextTape.length >= cfg.traders) {
       realised.current += roundPnl.current
       setPhase('reveal')
-      setNote(`Resolved ${V.current ? 'YES' : 'NO'}. Realised ${roundPnl.current >= 0 ? '+' : ''}${roundPnl.current} this round. The tape implied ${Math.round(q.current * 100)}% by the end.`)
+      setNote(
+        `Resolved ${V.current ? 'YES' : 'NO'}. Realised ${roundPnl.current >= 0 ? '+' : ''}${roundPnl.current} this round. The tape implied ${Math.round(q.current * 100)}% by the end.`,
+      )
       setTimeout(() => {
         const done = roundNo + 1
         if (done >= cfg.rounds) finish()
@@ -193,13 +217,18 @@ function Run({ cfg, onDone, onQuit }: { cfg: MakerConfig; onDone: (f: Finished) 
     >
       <div className="maker">
         <p className="muted">
-          YES pays 100. Prior <strong className="tnum">{Math.round(prior * 100)}%</strong>. {Math.round(mu * 100)}% of traders know the answer.
+          YES pays 100. Prior <strong className="tnum">{Math.round(prior * 100)}%</strong>. {Math.round(mu * 100)}% of traders know the
+          answer.
         </p>
         <ul className="maker__tape tnum">
           {tape.map((t, i) => (
             <li key={i} className={`is-${t.action}`}>
               <span className="muted">{i + 1}.</span>{' '}
-              {t.action === 'buy' ? `Bought from you at ${t.ask}` : t.action === 'sell' ? `Sold to you at ${t.bid}` : `No trade at ${t.bid} / ${t.ask}`}
+              {t.action === 'buy'
+                ? `Bought from you at ${t.ask}`
+                : t.action === 'sell'
+                  ? `Sold to you at ${t.bid}`
+                  : `No trade at ${t.bid} / ${t.ask}`}
             </li>
           ))}
         </ul>
@@ -227,13 +256,21 @@ function Summary({ attempt }: { attempt: Attempt<MakerConfig> }) {
     <section className="result__section">
       <h2>Quoting</h2>
       <p className="muted tnum">
-        Your quotes left {shortfall.toFixed(1)} cents a quote on the table against the best possible quote. {wide} were too wide, {tight} too tight.
-        {afterBuy.length >= 3 ? ` After a buy your mid sat ${mean(afterBuy, 'midError') >= 0 ? 'above' : 'below'} the tape by ${Math.abs(mean(afterBuy, 'midError')).toFixed(1)} on average.` : ''}
-        {afterSell.length >= 3 ? ` After a sell, ${mean(afterSell, 'midError') >= 0 ? 'above' : 'below'} by ${Math.abs(mean(afterSell, 'midError')).toFixed(1)}.` : ''}
-        {' '}Realised over the run: {Number(attempt.meta?.realised ?? 0) >= 0 ? '+' : ''}
+        Your quotes left {shortfall.toFixed(1)} cents a quote on the table against the best possible quote. {wide} were too wide, {tight}{' '}
+        too tight.
+        {afterBuy.length >= 3
+          ? ` After a buy your mid sat ${mean(afterBuy, 'midError') >= 0 ? 'above' : 'below'} the tape by ${Math.abs(mean(afterBuy, 'midError')).toFixed(1)} on average.`
+          : ''}
+        {afterSell.length >= 3
+          ? ` After a sell, ${mean(afterSell, 'midError') >= 0 ? 'above' : 'below'} by ${Math.abs(mean(afterSell, 'midError')).toFixed(1)}.`
+          : ''}{' '}
+        Realised over the run: {Number(attempt.meta?.realised ?? 0) >= 0 ? '+' : ''}
         {attempt.meta?.realised ?? 0}.
       </p>
-      <p className="faint">The rule the model gives: after a buy, move both prices up; after a sell, move both down; the more informed the flow, the more you move and the wider you quote.</p>
+      <p className="faint">
+        The rule the model gives: after a buy, move both prices up; after a sell, move both down; the more informed the flow, the more you
+        move and the wider you quote.
+      </p>
     </section>
   )
 }
@@ -247,8 +284,17 @@ function Settings({ cfg, setCfg }: { cfg: MakerConfig; setCfg: (f: (c: MakerConf
       <Setting title="Traders a round">
         <Seg options={[6, 10] as const} value={cfg.traders} onChange={(t) => setCfg((c) => ({ ...c, traders: t }))} label="Traders" />
       </Setting>
-      <Setting title="Informed share" note="The share of traders who know the outcome. The rest trade on a private value, so they trade less when your quote is wide.">
-        <Seg options={[0.2, 0.4, 0.6] as const} value={cfg.informed} onChange={(i) => setCfg((c) => ({ ...c, informed: i }))} label="Informed" format={(i) => `${Math.round(i * 100)}%`} />
+      <Setting
+        title="Informed share"
+        note="The share of traders who know the outcome. The rest trade on a private value, so they trade less when your quote is wide."
+      >
+        <Seg
+          options={[0.2, 0.4, 0.6] as const}
+          value={cfg.informed}
+          onChange={(i) => setCfg((c) => ({ ...c, informed: i }))}
+          label="Informed"
+          format={(i) => `${Math.round(i * 100)}%`}
+        />
       </Setting>
     </>
   )
@@ -257,8 +303,10 @@ function Settings({ cfg, setCfg }: { cfg: MakerConfig; setCfg: (f: (c: MakerConf
 export const eventMakerSpec: CognitiveSpec<MakerConfig> = {
   id: 'event-maker',
   title: 'Make the market on an event',
-  blurb: 'Quote bid and ask in cents on a YES contract. Some traders know the answer. Read the tape, move your prices, and do not get picked off.',
+  blurb:
+    'Quote bid and ask in cents on a YES contract. Some traders know the answer. Read the tape, move your prices, and do not get picked off.',
   defaults: { rounds: 5, traders: 6, informed: 0.4 },
+  review: 'Quotes with negative expected profit, with the best quote at that moment and why yours lost.',
   configKey: (c) => `mk:r${c.rounds}:t${c.traders}:i${c.informed}`,
   describe: (c) => `${c.rounds} rounds of ${c.traders} traders, ${Math.round(c.informed * 100)}% informed`,
   Settings,
@@ -269,7 +317,22 @@ export const eventMakerSpec: CognitiveSpec<MakerConfig> = {
   pace: false,
   breakdowns: [
     { title: 'By width', key: (e) => String(e.tags?.widthCall ?? ''), order: ['too tight', 'about right', 'too wide'] },
-    { title: 'By lean against the tape', key: (e) => (e.tags?.lean === 'high' ? 'Mid too high' : e.tags?.lean === 'low' ? 'Mid too low' : 'Mid about right'), order: ['Mid too low', 'Mid about right', 'Mid too high'] },
-    { title: 'By what came before', key: (e) => (e.tags?.after === 'buy' ? 'After a buy' : e.tags?.after === 'sell' ? 'After a sell' : e.tags?.after === 'none' ? 'After no trade' : 'First quote'), order: ['First quote', 'After a buy', 'After a sell', 'After no trade'] },
+    {
+      title: 'By lean against the tape',
+      key: (e) => (e.tags?.lean === 'high' ? 'Mid too high' : e.tags?.lean === 'low' ? 'Mid too low' : 'Mid about right'),
+      order: ['Mid too low', 'Mid about right', 'Mid too high'],
+    },
+    {
+      title: 'By what came before',
+      key: (e) =>
+        e.tags?.after === 'buy'
+          ? 'After a buy'
+          : e.tags?.after === 'sell'
+            ? 'After a sell'
+            : e.tags?.after === 'none'
+              ? 'After no trade'
+              : 'First quote',
+      order: ['First quote', 'After a buy', 'After a sell', 'After no trade'],
+    },
   ],
 }

@@ -47,7 +47,14 @@ function Run({ cfg, onDone, onQuit }: { cfg: SwitchConfig; onDone: (f: Finished)
   useEscape(onQuit)
 
   const nextTrial = useCallback(() => {
-    const t: Task = prevTask.current === null ? pick(['parity', 'magnitude']) : chance(cfg.switchRate) ? (prevTask.current === 'parity' ? 'magnitude' : 'parity') : prevTask.current
+    const t: Task =
+      prevTask.current === null
+        ? pick(['parity', 'magnitude'])
+        : chance(cfg.switchRate)
+          ? prevTask.current === 'parity'
+            ? 'magnitude'
+            : 'parity'
+          : prevTask.current
     let d = pick(DIGITS)
     if (d === digitRef.current) d = pick(DIGITS.filter((x) => x !== d))
     taskRef.current = t
@@ -85,7 +92,12 @@ function Run({ cfg, onDone, onQuit }: { cfg: SwitchConfig; onDone: (f: Finished)
       correct: ok.length,
       wrong: logs.current.length - ok.length,
       durationSec: Math.round((performance.now() - startAt.current) / 1000),
-      meta: { switchCost: cost, accuracy: Math.round(acc * 100), medianSwitch: sw.length ? Math.round(median(sw)!) : 0, medianRepeat: rp.length ? Math.round(median(rp)!) : 0 },
+      meta: {
+        switchCost: cost,
+        accuracy: Math.round(acc * 100),
+        medianSwitch: sw.length ? Math.round(median(sw)!) : 0,
+        medianRepeat: rp.length ? Math.round(median(rp)!) : 0,
+      },
     })
   }, [onDone])
 
@@ -172,7 +184,9 @@ function Summary({ attempt }: { attempt: Attempt<SwitchConfig> }) {
       <h2>Switch cost</h2>
       <p className="muted">
         Repeat trials {m.medianRepeat} ms, switch trials {m.medianSwitch} ms, so a switch costs {m.switchCost} ms. Accuracy {acc}%.
-        {acc < 85 ? ' Below 85 percent the cost is not reliable: slow down a little.' : ' Typical adult costs run 100 to 300 ms and fall with practice.'}
+        {acc < 85
+          ? ' Below 85 percent the cost is not reliable: slow down a little.'
+          : ' Typical adult costs run 100 to 300 ms and fall with practice.'}
       </p>
     </section>
   )
@@ -185,10 +199,22 @@ function Settings({ cfg, setCfg }: { cfg: SwitchConfig; setCfg: (f: (c: SwitchCo
         <Seg options={[48, 96, 144] as const} value={cfg.trials} onChange={(t) => setCfg((c) => ({ ...c, trials: t }))} label="Trials" />
       </Setting>
       <Setting title="Switch rate" note="How often the rule changes. Half is the standard paradigm.">
-        <Seg options={[0.3, 0.5] as const} value={cfg.switchRate} onChange={(r) => setCfg((c) => ({ ...c, switchRate: r }))} label="Switch rate" format={(r) => `${r * 100}%`} />
+        <Seg
+          options={[0.3, 0.5] as const}
+          value={cfg.switchRate}
+          onChange={(r) => setCfg((c) => ({ ...c, switchRate: r }))}
+          label="Switch rate"
+          format={(r) => `${r * 100}%`}
+        />
       </Setting>
       <Setting title="Gap before the next digit" note="A short gap gives less time to prepare for a switch, so the cost is larger.">
-        <Seg options={[300, 800] as const} value={cfg.gapMs} onChange={(g) => setCfg((c) => ({ ...c, gapMs: g }))} label="Gap" format={(g) => `${g} ms`} />
+        <Seg
+          options={[300, 800] as const}
+          value={cfg.gapMs}
+          onChange={(g) => setCfg((c) => ({ ...c, gapMs: g }))}
+          label="Gap"
+          format={(g) => `${g} ms`}
+        />
       </Setting>
     </>
   )
@@ -197,7 +223,8 @@ function Settings({ cfg, setCfg }: { cfg: SwitchConfig; setCfg: (f: (c: SwitchCo
 export const taskSwitchSpec: CognitiveSpec<SwitchConfig> = {
   id: 'task-switch',
   title: 'Task switch',
-  blurb: 'One digit, two rules, no warning when the rule changes. The score is how much a switch slows you down, in milliseconds. Lower is better.',
+  blurb:
+    'One digit, two rules, no warning when the rule changes. The score is how much a switch slows you down, in milliseconds. Lower is better.',
   defaults: { trials: 96, switchRate: 0.5, gapMs: 300 },
   configKey: (c) => `ts:n${c.trials}:s${c.switchRate}:g${c.gapMs}`,
   describe: (c) => `${c.trials} trials, ${c.switchRate * 100}% switches, ${c.gapMs} ms gap`,
@@ -210,8 +237,20 @@ export const taskSwitchSpec: CognitiveSpec<SwitchConfig> = {
   pace: true,
   paceLabel: 'Reaction time per trial, in order. Blue is right, red is wrong.',
   breakdowns: [
-    { title: 'By trial type', key: (e) => (e.tags?.kind === 'switch' ? 'Switch' : e.tags?.kind === 'repeat' ? 'Repeat' : null), order: ['Repeat', 'Switch'] },
-    { title: 'By rule', key: (e) => (e.tags?.task === 'parity' ? 'Odd or even' : 'Under or over 5'), order: ['Odd or even', 'Under or over 5'] },
-    { title: 'By congruence', key: (e) => (e.tags?.congruent ? 'Both rules agree' : 'Rules disagree'), order: ['Both rules agree', 'Rules disagree'] },
+    {
+      title: 'By trial type',
+      key: (e) => (e.tags?.kind === 'switch' ? 'Switch' : e.tags?.kind === 'repeat' ? 'Repeat' : null),
+      order: ['Repeat', 'Switch'],
+    },
+    {
+      title: 'By rule',
+      key: (e) => (e.tags?.task === 'parity' ? 'Odd or even' : 'Under or over 5'),
+      order: ['Odd or even', 'Under or over 5'],
+    },
+    {
+      title: 'By congruence',
+      key: (e) => (e.tags?.congruent ? 'Both rules agree' : 'Rules disagree'),
+      order: ['Both rules agree', 'Rules disagree'],
+    },
   ],
 }

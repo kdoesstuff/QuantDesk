@@ -1,7 +1,15 @@
 import { scaleLinear, scaleBand, line as d3line, curveMonotoneX, median } from 'd3'
 
 /** Seconds per item across a run, bars coloured by category, with a smoothed trend and the median. */
-export default function PaceChart({ ms, colours, label = 'Seconds per problem across the run' }: { ms: number[]; colours?: string[]; label?: string }) {
+export default function PaceChart({
+  ms,
+  colours,
+  label = 'Seconds per problem across the run',
+}: {
+  ms: number[]
+  colours?: string[]
+  label?: string
+}) {
   const W = 640
   const H = 160
   const padL = 36
@@ -13,7 +21,10 @@ export default function PaceChart({ ms, colours, label = 'Seconds per problem ac
     .range([padL, W - 8])
     .padding(ms.length > 80 ? 0.1 : 0.25)
   const maxS = Math.max(2, ...ms.map((m) => m / 1000))
-  const y = scaleLinear().domain([0, maxS]).range([H - padB, padT]).nice()
+  const y = scaleLinear()
+    .domain([0, maxS])
+    .range([H - padB, padT])
+    .nice()
   const med = median(ms)! / 1000
 
   const trend = ms.map((_, i) => {

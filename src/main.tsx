@@ -43,6 +43,9 @@ import LiveResult from './drills/live/Result'
 import type { LiveConfig, LiveSpec } from './drills/live/spec'
 import { raceSpec } from './drills/live/specs/race'
 import { evidenceSpec } from './drills/live/specs/evidence'
+import { tricksSpec } from './drills/typed/specs/tricks'
+import { diceGamesSpec } from './drills/rounds/specs/diceGames'
+import { stopOrRollSpec } from './drills/cognitive/stopOrRoll'
 
 function typedRoutes<C extends object>(spec: TypedSpec<C>): RouteObject[] {
   return [
@@ -97,8 +100,10 @@ const router = createHashRouter([
       ...typedRoutes(sequencesSpec),
       ...typedRoutes(fractionsSpec),
       ...typedRoutes(percentagesSpec),
+      ...typedRoutes(tricksSpec),
       ...roundsRoutes(diceMarketSpec),
       ...roundsRoutes(cardsMarketSpec),
+      ...roundsRoutes(diceGamesSpec),
       ...roundsRoutes(makeMarketSpec),
       ...roundsRoutes(bettingBoardSpec),
       ...typedRoutes(kellySpec),
@@ -113,6 +118,7 @@ const router = createHashRouter([
       ...liveRoutes(raceSpec),
       ...liveRoutes(evidenceSpec),
       ...cognitiveRoutes(eventMakerSpec),
+      ...cognitiveRoutes(stopOrRollSpec),
       { path: '*', element: <ErrorPage notFound /> },
     ].map((r) => ({ ...r, errorElement: <ErrorPage /> })),
   },

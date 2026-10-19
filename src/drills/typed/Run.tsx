@@ -5,7 +5,7 @@ import { store, uid } from '../../lib/storage'
 import { loadDrillConfig } from '../../lib/config'
 import { RunFrame } from '../shared/Frames'
 import { useEscape, useRunClock } from '../shared/hooks'
-import { normalise, type Item, type TypedSpec } from './spec'
+import { modeOf, normalise, type Item, type TypedSpec } from './spec'
 
 /**
  * The run screen for every typed-answer drill. Zetamac semantics: a right
@@ -16,6 +16,7 @@ import { normalise, type Item, type TypedSpec } from './spec'
 export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C> }) {
   const nav = useNavigate()
   const cfg = useRef<C>(loadDrillConfig(spec.id, spec.defaults)).current
+  const mode = modeOf(spec, cfg)
   const durationSec = spec.duration(cfg)
   const limit = spec.limit ? spec.limit(cfg) : Infinity
   const points = spec.points ? spec.points(cfg) : { right: 1, wrong: 0 }
@@ -30,6 +31,7 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
   const logs = useRef<EventLog[]>([])
   const shownAt = useRef(0)
   const misses = useRef(0)
+  const tried = useRef<string | undefined>(undefined)
   const inputRef = useRef<HTMLInputElement>(null)
   const itemRef = useRef(item)
   itemRef.current = item
@@ -41,7 +43,7 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
     finished.current = true
     const it = itemRef.current
     // In typed mode the problem on screen when the clock stops is logged as unanswered.
-    if (spec.mode === 'typed') {
+    if (mode === 'typed') {
       logs.current.push({
         kind: it.kind,
         prompt: it.prompt,
@@ -51,11 +53,15 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
         misses: misses.current,
         correct: false,
         tags: it.tags,
+        how: it.how,
+        detail: it.detail,
+        tried: tried.current,
       })
     }
     const answered = logs.current.filter((l) => l.given !== null)
     const correct = answered.filter((l) => l.correct).length
-    const wrong = spec.mode === 'typed' ? logs.current.reduce((s, l) => s + l.misses, 0) : answered.length - correct
+    const wrong =
+      mode === 'typed' && !spec.oneShot ? logs.current.reduce((s, l) => s + l.misses, 0) : answered.filter((l) => !l.correct).length
     const attempt: Attempt<C> = {
       id: uid(),
       ts: Date.now(),
@@ -92,6 +98,7 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
       scoreRef.current += delta
       setScore(scoreRef.current)
       misses.current = 0
+      tried.current = undefined
       setValue('')
       const done = logs.current.length
       setN(done)
@@ -106,6 +113,7 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
   )
 
   const logCorrect = (v: string) => {
+    const slipped = misses.current > 0
     advance(
       {
         kind: item.kind,
@@ -116,11 +124,16 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
         misses: misses.current,
         correct: true,
         tags: item.tags,
+        // The approach is kept only when there is something to review.
+        how: slipped ? item.how : undefined,
+        detail: slipped ? item.detail : undefined,
+        tried: slipped ? tried.current : undefined,
       },
       points.right,
     )
   }
   const miss = () => {
+    if (misses.current === 0) tried.current = value
     misses.current += 1
     setShake(true)
     setTimeout(() => setShake(false), 260)
@@ -129,12 +142,53 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
 
   // Enter-submit mode: check only when asked, allow a tolerance.
   const onSubmit = () => {
-    if (phase !== 'running' || value === '') return
+    if (phase !== 'running') return
+    if (value === '') {
+      // Test conditions: an empty submit is a free skip.
+      if (spec.oneShot)
+        advance(
+          {
+            kind: item.kind,
+            prompt: item.prompt,
+            answer: item.answer,
+            given: 'skip',
+            ms: performance.now() - shownAt.current,
+            misses: 0,
+            correct: false,
+            tags: { ...item.tags, skipped: true },
+            how: item.how,
+            detail: item.detail,
+          },
+          0,
+        )
+      return
+    }
     const n = Number(normalise(value))
     const target = Number(normalise(item.answer))
     const tol = item.tolerance ?? 0
-    if (Number.isFinite(n) && Math.abs(n - target) <= tol + 1e-9) logCorrect(value)
-    else miss()
+    const accepted = [item.answer, ...(item.alt ?? [])].map(normalise)
+    if ((Number.isFinite(n) && Math.abs(n - target) <= tol + 1e-9) || accepted.includes(normalise(value))) logCorrect(value)
+    else if (spec.oneShot) {
+      // One try: wrong ends the question with the wrong points.
+      setShake(true)
+      setTimeout(() => setShake(false), 260)
+      advance(
+        {
+          kind: item.kind,
+          prompt: item.prompt,
+          answer: item.answer,
+          given: value,
+          ms: performance.now() - shownAt.current,
+          misses: 1,
+          correct: false,
+          tags: item.tags,
+          how: item.how,
+          detail: item.detail,
+          tried: value,
+        },
+        points.wrong,
+      )
+    } else miss()
   }
 
   // Typed mode
@@ -170,6 +224,8 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
           misses: 0,
           correct,
           tags: { ...it.tags, skipped: idx === null },
+          how: correct ? undefined : it.how,
+          detail: correct ? undefined : it.detail,
         },
         idx === null ? 0 : correct ? points.right : points.wrong,
       )
@@ -178,7 +234,7 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
   )
 
   useEffect(() => {
-    if (spec.mode !== 'choice') return
+    if (mode !== 'choice') return
     const onKey = (e: KeyboardEvent) => {
       if (e.key >= '1' && e.key <= '4') {
         const i = Number(e.key) - 1
@@ -190,7 +246,7 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [choose, spec.mode])
+  }, [choose, mode])
 
   const pct = durationSec > 0 ? (remaining / durationSec) * 100 : limit < Infinity ? (1 - n / limit) * 100 : 100
   const timeText = durationSec > 0 ? `${Math.ceil(remaining)}s` : `${Math.floor(elapsed)}s`
@@ -212,8 +268,15 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
       left={left}
       right={score}
       countdown={phase === 'countdown' ? count : null}
-      hint={spec.hint ?? (spec.mode === 'choice' ? 'Keys 1 to 4, Enter to skip, Esc to stop' : 'Esc to stop')}
-      wide={spec.mode === 'choice'}
+      hint={
+        (typeof spec.hint === 'function' ? spec.hint(cfg) : spec.hint) ??
+        (mode === 'choice'
+          ? 'Keys 1 to 4, Enter to skip, Esc to stop'
+          : spec.oneShot
+            ? 'Type the answer, Enter to submit. Enter on an empty field skips for free. Esc to stop'
+            : 'Esc to stop')
+      }
+      wide={mode === 'choice'}
     >
       {item.detail && (
         <dl className="run__detail tnum">
@@ -229,7 +292,7 @@ export default function TypedRun<C extends object>({ spec }: { spec: TypedSpec<C
         {item.prompt}
       </div>
       {item.sub ? <div className="run__sub muted">{item.sub}</div> : null}
-      {spec.mode === 'typed' ? (
+      {mode === 'typed' ? (
         <div className="run__answer">
           <span className="run__eq">=</span>
           <input

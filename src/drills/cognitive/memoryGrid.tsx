@@ -157,7 +157,12 @@ function Run({ cfg, onDone, onQuit }: { cfg: MemoryConfig; onDone: (f: Finished)
       countdown={phase === 'countdown' ? count : null}
       hint="Click the cells that lit up. Esc to stop"
     >
-      <div className={`mgrid mgrid--${g} is-${phase}`} style={{ gridTemplateColumns: `repeat(${g}, 1fr)` }} role="grid" aria-label={`${g} by ${g} grid`}>
+      <div
+        className={`mgrid mgrid--${g} is-${phase}`}
+        style={{ gridTemplateColumns: `repeat(${g}, 1fr)` }}
+        role="grid"
+        aria-label={`${g} by ${g} grid`}
+      >
         {Array.from({ length: g * g }, (_, i) => {
           const lit = phase === 'show' && pattern.includes(i)
           const isFound = found.has(i)
@@ -166,7 +171,13 @@ function Run({ cfg, onDone, onQuit }: { cfg: MemoryConfig; onDone: (f: Finished)
           return (
             <button
               key={i}
-              className={'mgrid__cell' + (lit ? ' is-lit' : '') + (isFound ? ' is-found' : '') + (isWrong ? ' is-wrong' : '') + (missed ? ' is-missed' : '')}
+              className={
+                'mgrid__cell' +
+                (lit ? ' is-lit' : '') +
+                (isFound ? ' is-found' : '') +
+                (isWrong ? ' is-wrong' : '') +
+                (missed ? ' is-missed' : '')
+              }
               onClick={() => click(i)}
               aria-label={`cell ${i + 1}`}
               disabled={phase !== 'recall'}
@@ -199,10 +210,22 @@ function Settings({ cfg, setCfg }: { cfg: MemoryConfig; setCfg: (f: (c: MemoryCo
   return (
     <>
       <Setting title="Start at">
-        <Seg options={[3, 4, 5, 6] as const} value={cfg.start} onChange={(s) => setCfg((c) => ({ ...c, start: s }))} label="Start" format={(s) => `${s} cells`} />
+        <Seg
+          options={[3, 4, 5, 6] as const}
+          value={cfg.start}
+          onChange={(s) => setCfg((c) => ({ ...c, start: s }))}
+          label="Start"
+          format={(s) => `${s} cells`}
+        />
       </Setting>
       <Setting title="Shown for">
-        <Seg options={[700, 1000, 1400] as const} value={cfg.flashMs} onChange={(f) => setCfg((c) => ({ ...c, flashMs: f }))} label="Flash" format={(f) => `${f / 1000}s`} />
+        <Seg
+          options={[700, 1000, 1400] as const}
+          value={cfg.flashMs}
+          onChange={(f) => setCfg((c) => ({ ...c, flashMs: f }))}
+          label="Flash"
+          format={(f) => `${f / 1000}s`}
+        />
       </Setting>
       <Setting title="Lives" note="A wrong cell ends the trial. Lose all lives and the run ends.">
         <Seg options={[1, 3, 5] as const} value={cfg.lives} onChange={(l) => setCfg((c) => ({ ...c, lives: l }))} label="Lives" />

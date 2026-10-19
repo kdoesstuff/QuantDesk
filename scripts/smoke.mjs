@@ -24,6 +24,9 @@ const ids = [
   'evidence',
   'event-maker',
   'dutch-book',
+  'tricks',
+  'dice-games',
+  'stop-or-roll',
 ]
 const b = await chromium.launch({ executablePath: process.env.CHROME_PATH })
 for (const vp of [

@@ -3,8 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { scaleLinear, scaleBand, line as d3line, curveMonotoneX, median } from 'd3'
 import type { AnswerLog, Attempt, Operation, SpeedArithmeticConfig } from '../../lib/types'
 import { store } from '../../lib/storage'
-import { OP_LABEL, OP_SIGN } from './generator'
+import { OP_LABEL, OP_SIGN, howArithmetic } from './generator'
 import InsightsPanel from '../../insights/InsightsPanel'
+import Review from '../shared/Review'
 import '../shared/drill.css'
 
 function PaceChart({ ms, ops }: { ms: number[]; ops: Operation[] }) {
@@ -19,7 +20,10 @@ function PaceChart({ ms, ops }: { ms: number[]; ops: Operation[] }) {
     .range([padL, W - 8])
     .padding(0.25)
   const maxS = Math.max(2, ...ms.map((m) => m / 1000))
-  const y = scaleLinear().domain([0, maxS]).range([H - padB, padT]).nice()
+  const y = scaleLinear()
+    .domain([0, maxS])
+    .range([H - padB, padT])
+    .nice()
   const med = median(ms)! / 1000
 
   const colour: Record<Operation, string> = {
@@ -50,15 +54,7 @@ function PaceChart({ ms, ops }: { ms: number[]; ops: Operation[] }) {
         </g>
       ))}
       {ms.map((m, i) => (
-        <rect
-          key={i}
-          x={x(i)}
-          y={y(m / 1000)}
-          width={x.bandwidth()}
-          height={H - padB - y(m / 1000)}
-          fill={colour[ops[i]]}
-          opacity={0.55}
-        />
+        <rect key={i} x={x(i)} y={y(m / 1000)} width={x.bandwidth()} height={H - padB - y(m / 1000)} fill={colour[ops[i]]} opacity={0.55} />
       ))}
       <path d={trendPath} fill="none" stroke="var(--ink)" strokeWidth="1.6" />
       <line x1={padL} x2={W - 8} y1={y(med)} y2={y(med)} stroke="var(--ink-2)" strokeDasharray="3 4" />
@@ -115,7 +111,7 @@ export default function SpeedArithmeticResult() {
           medMs: rows.length ? median(rows.map((r) => r.ms))! : 0,
         }
       })
-    const slips = logs.filter((l) => l.misses > 0)
+    const slips = logs.filter((l) => l.misses > 0 || l.given === null)
     return { answered, byOp, slips }
   }, [attempt])
 
@@ -137,7 +133,9 @@ export default function SpeedArithmeticResult() {
   return (
     <div className="page result">
       <header className="result__head">
-        <p className="muted">Speed arithmetic, {attempt.durationSec < 60 ? `${attempt.durationSec}s` : `${attempt.durationSec / 60} min`}</p>
+        <p className="muted">
+          Speed arithmetic, {attempt.durationSec < 60 ? `${attempt.durationSec}s` : `${attempt.durationSec / 60} min`}
+        </p>
         <div className="result__score">
           <span className="tnum">{attempt.score}</span>
           <span className="result__verdict">
@@ -151,7 +149,8 @@ export default function SpeedArithmeticResult() {
           </span>
         </div>
         <p className="muted tnum">
-          {Math.round(perMin)} a minute, {attempt.wrong === 0 ? 'no slips.' : `${attempt.wrong} ${attempt.wrong === 1 ? 'slip.' : 'slips.'}`}
+          {Math.round(perMin)} a minute,{' '}
+          {attempt.wrong === 0 ? 'no slips.' : `${attempt.wrong} ${attempt.wrong === 1 ? 'slip.' : 'slips.'}`}
         </p>
       </header>
 
@@ -199,24 +198,10 @@ export default function SpeedArithmeticResult() {
         </table>
       </section>
 
-      {stats.slips.length > 0 && (
-        <section className="result__section">
-          <h2>Where it slipped</h2>
-          <ul className="slips tnum">
-            {stats.slips.map((l, i) => (
-              <li key={i}>
-                <span>
-                  {l.a} {OP_SIGN[l.op]} {l.b} = {l.answer}
-                </span>
-                <span className="muted">
-                  {l.misses} wrong {l.misses === 1 ? 'try' : 'tries'}
-                  {l.given === null ? ', then time' : ''}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <Review
+        events={stats.slips.map((l) => ({ ...l, prompt: `${l.a} ${OP_SIGN[l.op]} ${l.b}`, how: howArithmetic(l.op, l.a, l.b) }))}
+        intro="Problems with a wrong try or no answer, with one way to work each."
+      />
     </div>
   )
 }

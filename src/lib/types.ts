@@ -23,6 +23,9 @@ export type DrillId =
   | 'evidence'
   | 'event-maker'
   | 'dutch-book'
+  | 'dice-games'
+  | 'stop-or-roll'
+  | 'tricks'
 
 export type Operation = 'add' | 'sub' | 'mul' | 'div'
 
@@ -52,6 +55,12 @@ export interface EventLog {
   tags?: Record<string, TagValue>
   /** Points earned by this event, for games where score is not a count. */
   points?: number
+  /** The approach, in words with the numbers, kept only for events worth reviewing (wrong, slipped, timed out). */
+  how?: string
+  /** The first wrong submission, when there was one. */
+  tried?: string
+  /** Extra rows that were on screen (a basket, a board), kept for the review. */
+  detail?: { label: string; value: string }[]
   // Speed arithmetic keeps its original fields so old logs stay readable.
   op?: Operation
   a?: number

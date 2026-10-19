@@ -22,6 +22,7 @@ export const sections: SectionGroup[] = [
       { to: '/drill/sequences', label: 'Sequences', status: 'live' },
       { to: '/drill/fractions', label: 'Fractions to decimals', status: 'live' },
       { to: '/drill/percentages', label: 'Percentages', status: 'live' },
+      { to: '/drill/tricks', label: 'Mental tricks', status: 'live' },
     ],
   },
   {
@@ -29,6 +30,7 @@ export const sections: SectionGroup[] = [
     links: [
       { to: '/drill/dice-market', label: 'Dice market', status: 'live' },
       { to: '/drill/cards-market', label: 'Cards market', status: 'live' },
+      { to: '/drill/dice-games', label: 'Dice games market', status: 'live' },
       { to: '/drill/make-a-market', label: 'Make me a market', status: 'live' },
       { to: '/drill/betting-board', label: 'Betting board', status: 'live' },
       { to: '/drill/kelly', label: 'Kelly sizing', status: 'live' },
@@ -43,13 +45,12 @@ export const sections: SectionGroup[] = [
       { to: '/drill/evidence', label: 'Evidence stream', status: 'live' },
       { to: '/drill/event-maker', label: 'Event market maker', status: 'live' },
       { to: '/drill/dutch-book', label: 'Dutch book', status: 'live' },
+      { to: '/drill/stop-or-roll', label: 'Stop or roll', status: 'live' },
     ],
   },
   {
     title: 'Estimation',
-    links: [
-      { to: '/drill/fermi', label: 'Fermi', status: 'live' },
-    ],
+    links: [{ to: '/drill/fermi', label: 'Fermi', status: 'live' }],
   },
   {
     title: 'Cognitive',

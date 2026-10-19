@@ -174,7 +174,10 @@ function Run({ cfg, onDone, onQuit }: { cfg: BalloonConfig; onDone: (f: Finished
       hint="Space pumps, Enter collects. Each colour pops at its own rate. Esc to stop"
     >
       <div className="balloon-stage">
-        <div className={`balloon balloon--${colour}` + (phase === 'burst' ? ' is-burst' : phase === 'banked' ? ' is-banked' : '')} style={{ width: size, height: size * 1.15 }}>
+        <div
+          className={`balloon balloon--${colour}` + (phase === 'burst' ? ' is-burst' : phase === 'banked' ? ' is-banked' : '')}
+          style={{ width: size, height: size * 1.15 }}
+        >
           <span className="tnum">{phase === 'burst' ? 'pop' : phase === 'banked' ? `+${pumps * cfg.perPump}` : pumps}</span>
         </div>
         <div className="balloon-actions">
@@ -191,12 +194,14 @@ function Run({ cfg, onDone, onQuit }: { cfg: BalloonConfig; onDone: (f: Finished
 }
 
 function Summary({ attempt }: { attempt: Attempt<BalloonConfig> }) {
-  const byColour = (['blue', 'yellow', 'red'] as Colour[]).map((c) => {
-    const rows = attempt.answers.filter((l) => l.tags?.colour === c)
-    const banked = rows.filter((l) => !l.tags?.popped)
-    const adj = banked.length ? banked.reduce((a, l) => a + Number(l.tags?.pumps), 0) / banked.length : 0
-    return { c, n: rows.length, pops: rows.length - banked.length, adj, optimal: Math.round(LIMIT[c] / 2) }
-  }).filter((r) => r.n > 0)
+  const byColour = (['blue', 'yellow', 'red'] as Colour[])
+    .map((c) => {
+      const rows = attempt.answers.filter((l) => l.tags?.colour === c)
+      const banked = rows.filter((l) => !l.tags?.popped)
+      const adj = banked.length ? banked.reduce((a, l) => a + Number(l.tags?.pumps), 0) / banked.length : 0
+      return { c, n: rows.length, pops: rows.length - banked.length, adj, optimal: Math.round(LIMIT[c] / 2) }
+    })
+    .filter((r) => r.n > 0)
   return (
     <section className="result__section">
       <h2>Pumps by colour</h2>
@@ -231,13 +236,27 @@ function Settings({ cfg, setCfg }: { cfg: BalloonConfig; setCfg: (f: (c: Balloon
   return (
     <>
       <Setting title="Balloons">
-        <Seg options={[15, 30, 45] as const} value={cfg.balloons} onChange={(b) => setCfg((c) => ({ ...c, balloons: b }))} label="Balloons" />
+        <Seg
+          options={[15, 30, 45] as const}
+          value={cfg.balloons}
+          onChange={(b) => setCfg((c) => ({ ...c, balloons: b }))}
+          label="Balloons"
+        />
       </Setting>
       <Setting title="Points a pump">
         <Seg options={[5, 10] as const} value={cfg.perPump} onChange={(p) => setCfg((c) => ({ ...c, perPump: p }))} label="Per pump" />
       </Setting>
-      <Setting title="Colours" note="With colours on, blue pops somewhere in 1 to 128 pumps, yellow in 1 to 32, red in 1 to 8. You are not told which is which.">
-        <Seg options={[true, false] as const} value={cfg.colours} onChange={(v) => setCfg((c) => ({ ...c, colours: v }))} label="Colours" format={(v) => (v ? 'Three colours' : 'Blue only')} />
+      <Setting
+        title="Colours"
+        note="With colours on, blue pops somewhere in 1 to 128 pumps, yellow in 1 to 32, red in 1 to 8. You are not told which is which."
+      >
+        <Seg
+          options={[true, false] as const}
+          value={cfg.colours}
+          onChange={(v) => setCfg((c) => ({ ...c, colours: v }))}
+          label="Colours"
+          format={(v) => (v ? 'Three colours' : 'Blue only')}
+        />
       </Setting>
     </>
   )

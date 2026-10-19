@@ -43,6 +43,39 @@ function leadingZeros(s: string) {
   return m ? m[1].length : 0
 }
 
+/** The reciprocal of d to 6 places, with a note on whether it repeats, for the review. */
+function recipNote(d: number) {
+  const r = 1 / d
+  const digits = r.toFixed(6)
+  const terminates = (() => {
+    let x = d
+    while (x % 2 === 0) x /= 2
+    while (x % 5 === 0) x /= 5
+    return x === 1
+  })()
+  return `1/${d} = ${digits}${terminates ? '' : '... (repeating)'}`
+}
+
+function howToDecimal(n: number, d: number, places: number, ans: string) {
+  const unit = recipNote(d)
+  if (n === 1) return `${unit}. Rounded to ${places} places that is ${ans}.`
+  return `Know the unit fraction first: ${unit}. Then ${n}/${d} is ${n} × ${(1 / d).toFixed(4)} = ${(n / d).toFixed(4)}..., which rounds to ${ans} at ${places} places. With the ${d}ths memorised you can also count up the cycle.`
+}
+
+function howReciprocal(d: number, places: number, ans: string) {
+  const near = [10, 20, 25, 40, 50].reduce((a, b) => (Math.abs(b - d) < Math.abs(a - d) ? b : a))
+  if (d >= 11 && d !== near)
+    return `Anchor on 1/${near} = ${(1 / near).toFixed(4)} and adjust: 1/${d} is ${d > near ? 'a bit smaller' : 'a bit larger'}, about ${(1 / d).toFixed(4)}. To ${places} places that is ${ans}. (${recipNote(d)}.)`
+  return `${recipNote(d)}, so to ${places} places ${ans}.`
+}
+
+function howToFraction(s: string, n: number, d: number) {
+  const places = s.length - 2
+  const num = Math.round(Number(s) * 10 ** places)
+  const g = gcd(num, 10 ** places)
+  return `${s} is ${num} over ${10 ** places}. Divide top and bottom by ${g}: ${n}/${d}. Decimals that terminate always sit over a power of ten, so the denominator after cancelling only has factors 2 and 5.`
+}
+
 function next(c: FractionsConfig, prev?: Item): Item {
   const modes = c.modes.length ? c.modes : ALL_MODES
   let mode = pick(modes)
@@ -61,6 +94,7 @@ function next(c: FractionsConfig, prev?: Item): Item {
         prompt: `${n}/${d}`,
         sub: `to ${c.places} places`,
         answer: ans,
+        how: howToDecimal(n, d, c.places, ans),
         tags: { mode, denominator: d, numerator: n, places: c.places, leadingZeros: leadingZeros(ans), fifths: d % 5 === 0 },
       }
     }
@@ -73,6 +107,7 @@ function next(c: FractionsConfig, prev?: Item): Item {
         prompt: `1/${d}`,
         sub: `to ${c.places} places`,
         answer: ans,
+        how: howReciprocal(d, c.places, ans),
         tags: { mode, denominator: d, numerator: 1, places: c.places, leadingZeros: leadingZeros(ans), fifths: d % 5 === 0 },
       }
     }
@@ -88,28 +123,59 @@ function next(c: FractionsConfig, prev?: Item): Item {
       prompt: s,
       sub: 'as a fraction in lowest terms',
       answer: `${n}/${d}`,
+      how: howToFraction(s, n, d),
       tags: { mode, denominator: d, numerator: n, places: s.length - 2, leadingZeros: leadingZeros(s), fifths: d % 5 === 0 },
     }
   }
-  return { kind: 'toDecimal', prompt: '1/8', sub: `to ${c.places} places`, answer: (0.125).toFixed(c.places), tags: { mode: 'toDecimal', denominator: 8, numerator: 1, places: c.places, leadingZeros: 0, fifths: false } }
+  return {
+    kind: 'toDecimal',
+    prompt: '1/8',
+    sub: `to ${c.places} places`,
+    answer: (0.125).toFixed(c.places),
+    tags: { mode: 'toDecimal', denominator: 8, numerator: 1, places: c.places, leadingZeros: 0, fifths: false },
+  }
 }
 
 function Settings({ cfg, setCfg }: { cfg: FractionsConfig; setCfg: (f: (c: FractionsConfig) => FractionsConfig) => void }) {
   return (
     <>
       <Setting title="Clock">
-        <Seg options={DURATIONS} value={cfg.durationSec} onChange={(d) => setCfg((c) => ({ ...c, durationSec: d }))} label="Duration" format={durationLabel} />
+        <Seg
+          options={DURATIONS}
+          value={cfg.durationSec}
+          onChange={(d) => setCfg((c) => ({ ...c, durationSec: d }))}
+          label="Duration"
+          format={durationLabel}
+        />
       </Setting>
       <Setting title="Modes">
-        <Chips options={ALL_MODES} value={cfg.modes} onToggle={(m) => setCfg((c) => ({ ...c, modes: toggleIn(c.modes, m) }))} labels={MODE_LABEL} />
+        <Chips
+          options={ALL_MODES}
+          value={cfg.modes}
+          onToggle={(m) => setCfg((c) => ({ ...c, modes: toggleIn(c.modes, m) }))}
+          labels={MODE_LABEL}
+        />
       </Setting>
       <Setting title="Places" note="Answers are rounded. Trailing zeros are optional when typing.">
-        <Seg options={[2, 3, 4] as const} value={cfg.places} onChange={(p) => setCfg((c) => ({ ...c, places: p }))} label="Decimal places" />
+        <Seg
+          options={[2, 3, 4] as const}
+          value={cfg.places}
+          onChange={(p) => setCfg((c) => ({ ...c, places: p }))}
+          label="Decimal places"
+        />
       </Setting>
-      <Setting title="Denominators" note="For fraction to decimal and reciprocals. Decimal to fraction always uses halves, quarters, fifths, eighths and their multiples.">
+      <Setting
+        title="Denominators"
+        note="For fraction to decimal and reciprocals. Decimal to fraction always uses halves, quarters, fifths, eighths and their multiples."
+      >
         <div className="chips">
           {DENOMS.map((d) => (
-            <button key={d} className="chip tnum" aria-pressed={cfg.denoms.includes(d)} onClick={() => setCfg((c) => ({ ...c, denoms: toggleIn(c.denoms, d) }))}>
+            <button
+              key={d}
+              className="chip tnum"
+              aria-pressed={cfg.denoms.includes(d)}
+              onClick={() => setCfg((c) => ({ ...c, denoms: toggleIn(c.denoms, d) }))}
+            >
               {d}
             </button>
           ))}
@@ -125,7 +191,8 @@ export const fractionsSpec: TypedSpec<FractionsConfig> = {
   blurb: 'Sevenths, elevenths, thirteenths, sixteenths, from memory, to a set number of places. Decimal to fraction goes the other way.',
   mode: 'typed',
   defaults: { durationSec: 120, modes: ['toDecimal', 'reciprocal'], denoms: [7, 8, 9, 11, 12, 13, 16], places: 3 },
-  configKey: (c) => `fr:${c.durationSec}:${ALL_MODES.filter((m) => c.modes.includes(m)).join(',')}:p${c.places}:${[...c.denoms].sort((a, b) => a - b).join('.')}`,
+  configKey: (c) =>
+    `fr:${c.durationSec}:${ALL_MODES.filter((m) => c.modes.includes(m)).join(',')}:p${c.places}:${[...c.denoms].sort((a, b) => a - b).join('.')}`,
   describe: (c) => `${durationLabel(c.durationSec)}, ${c.places} places, ${c.modes.map((m) => MODE_LABEL[m].toLowerCase()).join(' and ')}`,
   duration: (c) => c.durationSec,
   next,

@@ -40,6 +40,9 @@ export const DRILL_IDS: readonly DrillId[] = [
   'evidence',
   'event-maker',
   'dutch-book',
+  'dice-games',
+  'stop-or-roll',
+  'tricks',
 ]
 const DRILL_SET = new Set<string>(DRILL_IDS)
 

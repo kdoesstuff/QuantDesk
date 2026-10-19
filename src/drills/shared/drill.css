@@ -1223,3 +1223,134 @@
     flex: 1 1 auto;
   }
 }
+
+/* Review: wrong, skipped and timed-out questions with the approach ----------- */
+.review__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.review__item {
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--r-board);
+  background: var(--ground-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.review__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+.review__n {
+  flex: none;
+  min-width: 1.6em;
+  font-size: var(--t-0);
+  color: var(--ink-3);
+}
+.review__prompt {
+  font-weight: 700;
+  font-size: var(--t-3);
+  overflow-wrap: anywhere;
+}
+.review__detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-5);
+  margin: 0;
+  font-size: var(--t-1);
+}
+.review__detail > div {
+  display: flex;
+  gap: var(--s-2);
+}
+.review__detail dt {
+  color: var(--ink-3);
+}
+.review__detail dd {
+  margin: 0;
+}
+.review__answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  font-size: var(--t-1);
+}
+.review__you.is-wrong {
+  color: var(--wrong);
+}
+.review__right {
+  color: var(--right, var(--blue-2));
+}
+.review__how {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--t-1);
+  line-height: 1.55;
+  max-width: 70ch;
+}
+
+/* Dice games market ---------------------------------------------------------- */
+.games__dice {
+  position: relative;
+  align-items: center;
+}
+.games__dice .die {
+  width: clamp(40px, 6vw, 56px);
+  height: clamp(40px, 6vw, 56px);
+}
+.games__sides {
+  font-size: var(--t-1);
+  font-weight: 700;
+  color: var(--ink-3);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--ground-3);
+}
+.games__text {
+  max-width: 34ch;
+  font-size: clamp(1.4rem, 3.4vw, 2.3rem);
+}
+
+/* Stop or roll ---------------------------------------------------------------- */
+.stop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-5);
+  text-align: center;
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+}
+.stop__rule {
+  max-width: 48ch;
+}
+.stop__history {
+  display: flex;
+  gap: var(--s-2);
+  min-height: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.stop__past {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ground-2);
+  color: var(--ink-3);
+  font-size: var(--t-1);
+  text-decoration: line-through;
+}
+.stop__face .die,
+.stop__face .card {
+  transform: scale(1.25);
+  margin: var(--s-3);
+}
+.stop__left {
+  font-weight: 700;
+  color: var(--ink-2);
+}

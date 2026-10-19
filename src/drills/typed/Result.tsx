@@ -6,7 +6,8 @@ import { durationLabel } from '../../lib/config'
 import { CategoryTable, Missing, ResultFrame, useAttempt } from '../shared/Frames'
 import PaceChart from '../shared/PaceChart'
 import InsightsPanel from '../../insights/InsightsPanel'
-import type { TypedSpec } from './spec'
+import Review from '../shared/Review'
+import { modeOf, type TypedSpec } from './spec'
 
 export function breakdownRows(events: EventLog[], key: (e: EventLog) => string | null, order?: string[]) {
   const m = new Map<string, EventLog[]>()
@@ -40,17 +41,17 @@ export default function TypedResult<C extends object>({ spec }: { spec: TypedSpe
   const stats = useMemo(() => {
     if (!attempt) return null
     const answered = attempt.answers.filter((l) => l.given !== null && l.given !== 'skip')
-    const slips = attempt.answers.filter((l) => l.misses > 0 || (!l.correct && l.given !== null && l.given !== 'skip'))
     const skipped = attempt.answers.filter((l) => l.given === 'skip').length
-    return { answered, slips, skipped }
+    return { answered, skipped }
   }, [attempt])
 
   if (attempt === undefined) return null
   if (!attempt || !stats) return <Missing drill={spec.id} />
 
   const perMin = attempt.durationSec > 0 ? (attempt.correct / attempt.durationSec) * 60 : 0
+  const mode = modeOf(spec, attempt.config)
   const line =
-    spec.mode === 'choice'
+    mode === 'choice' || spec.oneShot
       ? `${attempt.correct} right, ${attempt.wrong} wrong${stats.skipped ? `, ${stats.skipped} skipped` : ''}, in ${durationLabel(attempt.durationSec)}.`
       : `${Math.round(perMin)} a minute, ${attempt.wrong === 0 ? 'no slips.' : `${attempt.wrong} ${attempt.wrong === 1 ? 'slip.' : 'slips.'}`}`
 
@@ -78,30 +79,12 @@ export default function TypedResult<C extends object>({ spec }: { spec: TypedSpe
         return (
           <section className="result__section" key={b.title}>
             <h2>{b.title}</h2>
-            <CategoryTable rows={rows} head={['', 'Answered', spec.mode === 'choice' ? 'Right' : 'First try', 'Median']} />
+            <CategoryTable rows={rows} head={['', 'Answered', mode === 'choice' || spec.oneShot ? 'Right' : 'First try', 'Median']} />
           </section>
         )
       })}
 
-      {stats.slips.length > 0 && (
-        <section className="result__section">
-          <h2>Where it slipped</h2>
-          <ul className="slips tnum">
-            {stats.slips.map((l, i) => (
-              <li key={i}>
-                <span>
-                  {l.prompt} = {l.answer}
-                </span>
-                <span className="muted">
-                  {spec.mode === 'choice'
-                    ? `chose ${l.given}`
-                    : `${l.misses} wrong ${l.misses === 1 ? 'try' : 'tries'}${l.given === null ? ', then time' : ''}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <Review events={attempt.answers} />
     </ResultFrame>
   )
 }

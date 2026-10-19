@@ -90,3 +90,12 @@ Done.
 - Production page: content security policy injected at build time, referrer policy, description and social tags, manifest and icons for install to home screen, `robots.txt`, theme bootstrap moved out of inline script. Three.js is loaded lazily on the home page only; D3 and Three are their own chunks.
 - Checks: `npm run check` (typecheck, lint, `scripts/check-storage.mjs`), run by the deploy workflow before building. `npm run smoke` opens every page at 1440 and 390 and reports errors and overflow.
 - Desktop sidebar can be hidden and shown (panel button, remembered). The theme menu in the phone drawer opens inward so it is no longer clipped.
+
+## Question build from the PDFs
+
+- Review on every question game: `EventLog` gained `how`, `tried` and `detail`, kept only for events worth reviewing. `src/drills/shared/Review.tsx` renders them. Every generator now writes an approach with the numbers of the item (typed specs via `Item.how`, rounds via `Outcome.how`, live via `LiveProcess.explain`, the event maker inline, arithmetic derived at review time from the operands).
+- New: Dice games market (`rounds/specs/diceGames.tsx`, 12 families, fair by enumeration or closed form, checked against 40,000-play simulations in `scripts/fuzz-generators.mjs`), Stop or roll (`cognitive/stopOrRoll.tsx`, dice and a shrinking 13-card deck, optimal rule by dynamic programming, score is the share of optimal expected value kept), Mental tricks (`typed/specs/tricks.tsx`, nine shortcut families).
+- New families: seven sequence families (triangular, factorials, Pell, Padovan, sum of three, repeating block, letters), four event contract variants (coin from a bag, doors and a host, at least one is a boy, told one die shows), two betting board families (walks and runs, classics), 41 Fermi questions (energy and transport, space and materials).
+- Insights now show generator labels ("Percent change", not "Change") and map them back to settings ids for focus patches (`LABELS` and `idForLabel` in `features.ts`).
+- Sources used for problem types only, in our own words with random numbers; no text from the paid collections.
+- 80 in 8 defaults to typed answers (one try, Enter submits, empty Enter skips free, minus one for wrong); the four-option format of the real test is a setting. Typed engine gained `mode` as a function of config and `oneShot`.

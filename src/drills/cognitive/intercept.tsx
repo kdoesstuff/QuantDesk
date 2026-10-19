@@ -238,8 +238,11 @@ function Summary({ attempt }: { attempt: Attempt<InterceptConfig> }) {
     <section className="result__section">
       <h2>Timing</h2>
       <p className="muted">
-        {attempt.correct} of {attempt.answers.length} hit. Shots landed {Math.abs(Math.round(mean))} ms {mean > 0 ? 'late' : 'early'} on average, with a spread of {Math.round(sd)} ms.
-        {Math.abs(mean) > 60 ? ' That is a lean worth correcting: fire a touch ' + (mean > 0 ? 'earlier.' : 'later.') : ' No lean to speak of.'}
+        {attempt.correct} of {attempt.answers.length} hit. Shots landed {Math.abs(Math.round(mean))} ms {mean > 0 ? 'late' : 'early'} on
+        average, with a spread of {Math.round(sd)} ms.
+        {Math.abs(mean) > 60
+          ? ' That is a lean worth correcting: fire a touch ' + (mean > 0 ? 'earlier.' : 'later.')
+          : ' No lean to speak of.'}
       </p>
     </section>
   )
@@ -252,10 +255,25 @@ function Settings({ cfg, setCfg }: { cfg: InterceptConfig; setCfg: (f: (c: Inter
         <Seg options={[10, 20, 30] as const} value={cfg.targets} onChange={(t) => setCfg((c) => ({ ...c, targets: t }))} label="Targets" />
       </Setting>
       <Setting title="Target speed">
-        <Seg options={[1, 2, 3] as const} value={cfg.speed} onChange={(s) => setCfg((c) => ({ ...c, speed: s }))} label="Speed" format={(s) => (s === 1 ? 'Slow' : s === 2 ? 'Medium' : 'Fast')} />
+        <Seg
+          options={[1, 2, 3] as const}
+          value={cfg.speed}
+          onChange={(s) => setCfg((c) => ({ ...c, speed: s }))}
+          label="Speed"
+          format={(s) => (s === 1 ? 'Slow' : s === 2 ? 'Medium' : 'Fast')}
+        />
       </Setting>
-      <Setting title="Shot travel time" note="Longer travel means more lead. The right moment to fire is when the target is this many seconds from the cannon line.">
-        <Seg options={[0.6, 1, 1.5] as const} value={cfg.travel} onChange={(t) => setCfg((c) => ({ ...c, travel: t }))} label="Travel" format={(t) => `${t}s`} />
+      <Setting
+        title="Shot travel time"
+        note="Longer travel means more lead. The right moment to fire is when the target is this many seconds from the cannon line."
+      >
+        <Seg
+          options={[0.6, 1, 1.5] as const}
+          value={cfg.travel}
+          onChange={(t) => setCfg((c) => ({ ...c, travel: t }))}
+          label="Travel"
+          format={(t) => `${t}s`}
+        />
       </Setting>
     </>
   )
@@ -274,8 +292,21 @@ export const interceptSpec: CognitiveSpec<InterceptConfig> = {
   pointsLabel: 'targets hit',
   pace: false,
   breakdowns: [
-    { title: 'By timing', key: (e) => (e.tags?.noShot ? 'No shot' : e.tags?.lean === 'early' ? 'Fired early' : e.tags?.lean === 'late' ? 'Fired late' : 'On time'), order: ['On time', 'Fired early', 'Fired late', 'No shot'] },
-    { title: 'By direction', key: (e) => (e.tags?.direction === 'rightward' ? 'Left to right' : 'Right to left'), order: ['Left to right', 'Right to left'] },
-    { title: 'By speed', key: (e) => `${String(e.tags?.speed ?? 'medium')[0].toUpperCase()}${String(e.tags?.speed ?? 'medium').slice(1)} target`, order: ['Slow target', 'Medium target', 'Fast target'] },
+    {
+      title: 'By timing',
+      key: (e) =>
+        e.tags?.noShot ? 'No shot' : e.tags?.lean === 'early' ? 'Fired early' : e.tags?.lean === 'late' ? 'Fired late' : 'On time',
+      order: ['On time', 'Fired early', 'Fired late', 'No shot'],
+    },
+    {
+      title: 'By direction',
+      key: (e) => (e.tags?.direction === 'rightward' ? 'Left to right' : 'Right to left'),
+      order: ['Left to right', 'Right to left'],
+    },
+    {
+      title: 'By speed',
+      key: (e) => `${String(e.tags?.speed ?? 'medium')[0].toUpperCase()}${String(e.tags?.speed ?? 'medium').slice(1)} target`,
+      order: ['Slow target', 'Medium target', 'Fast target'],
+    },
   ],
 }

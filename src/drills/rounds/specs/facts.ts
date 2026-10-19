@@ -191,7 +191,7 @@ export const FACTS: Fact[] = [
   { q: 'Tiles in a standard Scrabble set', v: 100, cat: 'everyday' },
   { q: 'Dominoes in a double-six set', v: 28, cat: 'everyday' },
   { q: 'Strings on a standard guitar', v: 6, cat: 'everyday' },
-  { q: 'Men\'s 100 m world record in hundredths of a second', v: 958, cat: 'everyday' },
+  { q: "Men's 100 m world record in hundredths of a second", v: 958, cat: 'everyday' },
   { q: 'Cheetah top speed in km per hour', v: 110, note: 'about', cat: 'everyday' },
   { q: 'Cruising speed of an airliner in km per hour', v: 900, note: 'about', cat: 'everyday' },
   { q: 'Length of a football pitch in metres, FIFA standard', v: 105, cat: 'everyday' },

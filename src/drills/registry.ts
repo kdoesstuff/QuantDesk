@@ -20,6 +20,9 @@ import { eventMakerSpec } from './cognitive/eventMaker'
 import { dutchBookSpec } from './typed/specs/dutchBook'
 import { raceSpec } from './live/specs/race'
 import { evidenceSpec } from './live/specs/evidence'
+import { tricksSpec } from './typed/specs/tricks'
+import { diceGamesSpec } from './rounds/specs/diceGames'
+import { stopOrRollSpec } from './cognitive/stopOrRoll'
 
 /**
  * What the dashboard needs to know about each drill without importing its
@@ -43,27 +46,140 @@ function describeArithmetic(c: SpeedArithmeticConfig) {
 }
 
 const list: DrillMeta[] = [
-  { id: 'speed-arithmetic', label: 'Speed arithmetic', group: 'Speed', describe: (c) => describeArithmetic(c as SpeedArithmeticConfig), scoreName: 'right' },
-  { id: 'eighty-in-eight', label: '80 in 8', group: 'Speed', describe: (c) => eightySpec.describe(c as never), unit: ' pts', scoreName: 'points' },
+  {
+    id: 'speed-arithmetic',
+    label: 'Speed arithmetic',
+    group: 'Speed',
+    describe: (c) => describeArithmetic(c as SpeedArithmeticConfig),
+    scoreName: 'right',
+  },
+  {
+    id: 'eighty-in-eight',
+    label: '80 in 8',
+    group: 'Speed',
+    describe: (c) => eightySpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'points',
+  },
   { id: 'sequences', label: 'Sequences', group: 'Speed', describe: (c) => sequencesSpec.describe(c as never), scoreName: 'right' },
-  { id: 'fractions', label: 'Fractions to decimals', group: 'Speed', describe: (c) => fractionsSpec.describe(c as never), scoreName: 'right' },
+  {
+    id: 'fractions',
+    label: 'Fractions to decimals',
+    group: 'Speed',
+    describe: (c) => fractionsSpec.describe(c as never),
+    scoreName: 'right',
+  },
   { id: 'percentages', label: 'Percentages', group: 'Speed', describe: (c) => percentagesSpec.describe(c as never), scoreName: 'right' },
-  { id: 'dice-market', label: 'Dice market', group: 'Markets', describe: (c) => diceMarketSpec.describe(c as never), unit: ' pts', scoreName: 'edge' },
-  { id: 'cards-market', label: 'Cards market', group: 'Markets', describe: (c) => cardsMarketSpec.describe(c as never), unit: ' pts', scoreName: 'edge' },
-  { id: 'make-a-market', label: 'Make me a market', group: 'Markets', describe: (c) => makeMarketSpec.describe(c as never), unit: ' pts', scoreName: 'points' },
-  { id: 'betting-board', label: 'Betting board', group: 'Markets', describe: (c) => bettingBoardSpec.describe(c as never), unit: ' pts', scoreName: 'edge' },
+  {
+    id: 'dice-market',
+    label: 'Dice market',
+    group: 'Markets',
+    describe: (c) => diceMarketSpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'edge',
+  },
+  {
+    id: 'cards-market',
+    label: 'Cards market',
+    group: 'Markets',
+    describe: (c) => cardsMarketSpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'edge',
+  },
+  {
+    id: 'make-a-market',
+    label: 'Make me a market',
+    group: 'Markets',
+    describe: (c) => makeMarketSpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'points',
+  },
+  {
+    id: 'betting-board',
+    label: 'Betting board',
+    group: 'Markets',
+    describe: (c) => bettingBoardSpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'edge',
+  },
   { id: 'kelly', label: 'Kelly sizing', group: 'Markets', describe: (c) => kellySpec.describe(c as never), scoreName: 'right' },
-  { id: 'etf-arb', label: 'ETF arbitrage', group: 'Markets', describe: (c) => etfArbSpec.describe(c as never), unit: ' pts', scoreName: 'points' },
-  { id: 'event-contracts', label: 'Event contracts', group: 'Markets', describe: (c) => eventContractsSpec.describe(c as never), scoreName: 'right' },
+  {
+    id: 'etf-arb',
+    label: 'ETF arbitrage',
+    group: 'Markets',
+    describe: (c) => etfArbSpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'points',
+  },
+  {
+    id: 'event-contracts',
+    label: 'Event contracts',
+    group: 'Markets',
+    describe: (c) => eventContractsSpec.describe(c as never),
+    scoreName: 'right',
+  },
   { id: 'fermi', label: 'Fermi', group: 'Estimation', describe: (c) => fermiSpec.describe(c as never), unit: ' pts', scoreName: 'points' },
   { id: 'memory-grid', label: 'Memory grid', group: 'Cognitive', describe: (c) => memoryGridSpec.describe(c as never), scoreName: 'cells' },
-  { id: 'task-switch', label: 'Task switch', group: 'Cognitive', describe: (c) => taskSwitchSpec.describe(c as never), unit: ' ms', higherIsBetter: false, scoreName: 'switch cost' },
+  {
+    id: 'task-switch',
+    label: 'Task switch',
+    group: 'Cognitive',
+    describe: (c) => taskSwitchSpec.describe(c as never),
+    unit: ' ms',
+    higherIsBetter: false,
+    scoreName: 'switch cost',
+  },
   { id: 'intercept', label: 'Intercept', group: 'Cognitive', describe: (c) => interceptSpec.describe(c as never), scoreName: 'hits' },
-  { id: 'balloon', label: 'Balloon', group: 'Cognitive', describe: (c) => balloonSpec.describe(c as never), unit: ' pts', scoreName: 'points' },
-  { id: 'dutch-book', label: 'Dutch book', group: 'Prediction', describe: (c) => dutchBookSpec.describe(c as never), unit: ' pts', scoreName: 'points' },
+  {
+    id: 'balloon',
+    label: 'Balloon',
+    group: 'Cognitive',
+    describe: (c) => balloonSpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'points',
+  },
+  {
+    id: 'dutch-book',
+    label: 'Dutch book',
+    group: 'Prediction',
+    describe: (c) => dutchBookSpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'points',
+  },
   { id: 'race', label: 'The race', group: 'Prediction', describe: (c) => raceSpec.describe(c as never), unit: 'c', scoreName: 'edge' },
-  { id: 'evidence', label: 'Evidence stream', group: 'Prediction', describe: (c) => evidenceSpec.describe(c as never), unit: 'c', scoreName: 'edge' },
-  { id: 'event-maker', label: 'Event market maker', group: 'Prediction', describe: (c) => eventMakerSpec.describe(c as never), unit: 'c', scoreName: 'expected profit' },
+  {
+    id: 'evidence',
+    label: 'Evidence stream',
+    group: 'Prediction',
+    describe: (c) => evidenceSpec.describe(c as never),
+    unit: 'c',
+    scoreName: 'edge',
+  },
+  {
+    id: 'event-maker',
+    label: 'Event market maker',
+    group: 'Prediction',
+    describe: (c) => eventMakerSpec.describe(c as never),
+    unit: 'c',
+    scoreName: 'expected profit',
+  },
+  { id: 'tricks', label: 'Mental tricks', group: 'Speed', describe: (c) => tricksSpec.describe(c as never), scoreName: 'right' },
+  {
+    id: 'dice-games',
+    label: 'Dice games market',
+    group: 'Markets',
+    describe: (c) => diceGamesSpec.describe(c as never),
+    unit: ' pts',
+    scoreName: 'edge',
+  },
+  {
+    id: 'stop-or-roll',
+    label: 'Stop or roll',
+    group: 'Prediction',
+    describe: (c) => stopOrRollSpec.describe(c as never),
+    unit: '%',
+    scoreName: 'of optimal',
+  },
 ]
 
 export const DRILLS: Partial<Record<DrillId, DrillMeta>> = Object.fromEntries(list.map((m) => [m.id, m]))

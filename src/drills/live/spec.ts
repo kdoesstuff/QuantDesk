@@ -24,6 +24,8 @@ export interface LiveProcess<C extends object, S> {
   describe: (s: S, cfg: C) => string
   /** What the contract is. */
   contract: (cfg: C) => string
+  /** How fair is computed from this state, in words with the numbers, for the review. */
+  explain: (s: S, cfg: C) => string
   View: FC<{ state: S; cfg: C }>
 }
 

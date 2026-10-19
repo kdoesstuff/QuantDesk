@@ -40,7 +40,8 @@ export const MIN = {
   calibration: 10,
 }
 
-export type FindingKind = 'slow' | 'inaccurate' | 'strength' | 'fatigue' | 'rush' | 'gap' | 'trend' | 'bias' | 'calibration' | 'today' | 'pumps'
+export type FindingKind =
+  'slow' | 'inaccurate' | 'strength' | 'fatigue' | 'rush' | 'gap' | 'trend' | 'bias' | 'calibration' | 'today' | 'pumps'
 
 export interface Finding {
   id: string
@@ -303,12 +304,63 @@ function fmtScore(x: number) {
 function biasFindings(drill: DrillId, rows: Row[]): Finding[] {
   const out: Finding[] = []
   const checks: { dim: string; high: string; low: string; what: string; fix: [string, string] }[] = [
-    { dim: 'Your mid', high: 'Mid above fair', low: 'Mid below fair', what: 'your quotes', fix: ['You are overvaluing the hidden part. Count the expected value of what you cannot see before you anchor on what you can.', 'You are undervaluing the hidden part. Three and a half a die, and a card averages what is left in the deck.'] },
-    { dim: 'Lean', high: 'Quoted high', low: 'Quoted low', what: 'your estimates', fix: ['Shade the first number that comes to mind down by a third before you quote.', 'Shade the first number that comes to mind up by a third before you quote.'] },
-    { dim: 'Lean', high: 'Guessed high', low: 'Guessed low', what: 'your estimates', fix: ['Your decompositions multiply too many generous factors. Round each factor down.', 'Your decompositions leave factors out. Write the chain before the number.'] },
-    { dim: 'Timing', high: 'Fired late', low: 'Fired early', what: 'your shots', fix: ['Fire when the target is one travel time away, not when it looks close.', 'You are anticipating too much. Hold a beat longer.'] },
-    { dim: 'Lean', high: 'Mid too high', low: 'Mid too low', what: 'your quotes', fix: ['Your mid sits above what the tape implies. After sells, move down more.', 'Your mid sits below what the tape implies. After buys, move up more.'] },
-    { dim: 'Width', high: 'too wide', low: 'too tight', what: 'your quotes', fix: ['You quote wider than the informed share justifies and lose the noise flow. Tighten.', 'You quote tighter than the informed share justifies and get picked off. Widen.'] },
+    {
+      dim: 'Your mid',
+      high: 'Mid above fair',
+      low: 'Mid below fair',
+      what: 'your quotes',
+      fix: [
+        'You are overvaluing the hidden part. Count the expected value of what you cannot see before you anchor on what you can.',
+        'You are undervaluing the hidden part. Three and a half a die, and a card averages what is left in the deck.',
+      ],
+    },
+    {
+      dim: 'Lean',
+      high: 'Quoted high',
+      low: 'Quoted low',
+      what: 'your estimates',
+      fix: [
+        'Shade the first number that comes to mind down by a third before you quote.',
+        'Shade the first number that comes to mind up by a third before you quote.',
+      ],
+    },
+    {
+      dim: 'Lean',
+      high: 'Guessed high',
+      low: 'Guessed low',
+      what: 'your estimates',
+      fix: [
+        'Your decompositions multiply too many generous factors. Round each factor down.',
+        'Your decompositions leave factors out. Write the chain before the number.',
+      ],
+    },
+    {
+      dim: 'Timing',
+      high: 'Fired late',
+      low: 'Fired early',
+      what: 'your shots',
+      fix: ['Fire when the target is one travel time away, not when it looks close.', 'You are anticipating too much. Hold a beat longer.'],
+    },
+    {
+      dim: 'Lean',
+      high: 'Mid too high',
+      low: 'Mid too low',
+      what: 'your quotes',
+      fix: [
+        'Your mid sits above what the tape implies. After sells, move down more.',
+        'Your mid sits below what the tape implies. After buys, move up more.',
+      ],
+    },
+    {
+      dim: 'Width',
+      high: 'too wide',
+      low: 'too tight',
+      what: 'your quotes',
+      fix: [
+        'You quote wider than the informed share justifies and lose the noise flow. Tighten.',
+        'You quote tighter than the informed share justifies and get picked off. Widen.',
+      ],
+    },
   ]
   for (const c of checks) {
     const hi = rows.filter((r) => r.dims[c.dim] === c.high).length
@@ -385,9 +437,27 @@ function pumpsFindings(drill: DrillId, attempts: Attempt[]): Finding[] {
     const pops = rows.length - banked.length
     const cap = colour.charAt(0).toUpperCase() + colour.slice(1)
     if (banked.length >= 5 && adj < optimal * 0.6) {
-      out.push({ id: `${drill}|pumps|${colour}|under`, kind: 'pumps', drill, headline: `${cap}: you stop at ${adj.toFixed(0)} pumps, the sweet spot is ${optimal}`, detail: `${banked.length} banked, ${pops} popped. You are leaving money on ${colour} balloons: expected value keeps rising until about half the limit.`, n: rows.length, severity: 0.6, focusable: false })
+      out.push({
+        id: `${drill}|pumps|${colour}|under`,
+        kind: 'pumps',
+        drill,
+        headline: `${cap}: you stop at ${adj.toFixed(0)} pumps, the sweet spot is ${optimal}`,
+        detail: `${banked.length} banked, ${pops} popped. You are leaving money on ${colour} balloons: expected value keeps rising until about half the limit.`,
+        n: rows.length,
+        severity: 0.6,
+        focusable: false,
+      })
     } else if (pops / rows.length > 0.5 && rows.length >= 10) {
-      out.push({ id: `${drill}|pumps|${colour}|over`, kind: 'pumps', drill, headline: `${cap}: ${pct(pops / rows.length)} of them pop`, detail: `${pops} of ${rows.length}. The sweet spot is ${optimal} pumps; past it each pump risks more than it adds.`, n: rows.length, severity: 0.7, focusable: false })
+      out.push({
+        id: `${drill}|pumps|${colour}|over`,
+        kind: 'pumps',
+        drill,
+        headline: `${cap}: ${pct(pops / rows.length)} of them pop`,
+        detail: `${pops} of ${rows.length}. The sweet spot is ${optimal} pumps; past it each pump risks more than it adds.`,
+        n: rows.length,
+        severity: 0.7,
+        focusable: false,
+      })
     }
   }
   return out

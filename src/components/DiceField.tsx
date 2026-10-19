@@ -25,11 +25,36 @@ interface Body {
 
 const PIP_LAYOUT: Record<number, [number, number][]> = {
   1: [[0.5, 0.5]],
-  2: [[0.25, 0.25], [0.75, 0.75]],
-  3: [[0.25, 0.25], [0.5, 0.5], [0.75, 0.75]],
-  4: [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]],
-  5: [[0.25, 0.25], [0.75, 0.25], [0.5, 0.5], [0.25, 0.75], [0.75, 0.75]],
-  6: [[0.25, 0.2], [0.75, 0.2], [0.25, 0.5], [0.75, 0.5], [0.25, 0.8], [0.75, 0.8]],
+  2: [
+    [0.25, 0.25],
+    [0.75, 0.75],
+  ],
+  3: [
+    [0.25, 0.25],
+    [0.5, 0.5],
+    [0.75, 0.75],
+  ],
+  4: [
+    [0.25, 0.25],
+    [0.75, 0.25],
+    [0.25, 0.75],
+    [0.75, 0.75],
+  ],
+  5: [
+    [0.25, 0.25],
+    [0.75, 0.25],
+    [0.5, 0.5],
+    [0.25, 0.75],
+    [0.75, 0.75],
+  ],
+  6: [
+    [0.25, 0.2],
+    [0.75, 0.2],
+    [0.25, 0.5],
+    [0.75, 0.5],
+    [0.25, 0.8],
+    [0.75, 0.8],
+  ],
 }
 
 function pipTexture(n: number, body: string, pip: string) {
@@ -299,7 +324,7 @@ export default function DiceField({ className }: { className?: string }) {
         const rx = r / (hh * camera.aspect)
         const ry = r / hh
         ndc.copy(worldPos).project(camera)
-        const gx = hh * camera.aspect / group.scale.x
+        const gx = (hh * camera.aspect) / group.scale.x
         const gy = hh / group.scale.x
         if (ndc.x > 1 - rx) {
           b.pos.x -= (ndc.x - (1 - rx)) * gx

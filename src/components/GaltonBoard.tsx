@@ -101,26 +101,26 @@ export default function GaltonBoard({ className }: { className?: string }) {
       const maxCount = Math.max(8, ...counts)
       const binH = binBottom - binTop
       if (total >= 24) {
-      ctx.strokeStyle = ink2
-      ctx.globalAlpha = 0.35
-      ctx.lineWidth = 1.2
-      ctx.setLineDash([3, 4])
-      ctx.beginPath()
-      const n = ROWS
-      const p = 0.5
-      const mean = n * p
-      const sd = Math.sqrt(n * p * (1 - p))
-      for (let x = 0; x <= BINS * 8; x++) {
-        const k = x / 8 // continuous bin index
-        const expected = total * Math.exp(-0.5 * ((k - mean) / sd) ** 2) / (sd * Math.sqrt(2 * Math.PI))
-        const y = binBottom - (expected / maxCount) * binH
-        const px = binX(k)
-        if (x === 0) ctx.moveTo(px, y)
-        else ctx.lineTo(px, y)
-      }
-      ctx.stroke()
-      ctx.setLineDash([])
-      ctx.globalAlpha = 1
+        ctx.strokeStyle = ink2
+        ctx.globalAlpha = 0.35
+        ctx.lineWidth = 1.2
+        ctx.setLineDash([3, 4])
+        ctx.beginPath()
+        const n = ROWS
+        const p = 0.5
+        const mean = n * p
+        const sd = Math.sqrt(n * p * (1 - p))
+        for (let x = 0; x <= BINS * 8; x++) {
+          const k = x / 8 // continuous bin index
+          const expected = (total * Math.exp(-0.5 * ((k - mean) / sd) ** 2)) / (sd * Math.sqrt(2 * Math.PI))
+          const y = binBottom - (expected / maxCount) * binH
+          const px = binX(k)
+          if (x === 0) ctx.moveTo(px, y)
+          else ctx.lineTo(px, y)
+        }
+        ctx.stroke()
+        ctx.setLineDash([])
+        ctx.globalAlpha = 1
       }
 
       // Bins
@@ -244,11 +244,6 @@ export default function GaltonBoard({ className }: { className?: string }) {
   }, [])
 
   return (
-    <canvas
-      ref={ref}
-      className={className}
-      role="img"
-      aria-label="A Galton board: balls fall through pegs and pile into a bell curve"
-    />
+    <canvas ref={ref} className={className} role="img" aria-label="A Galton board: balls fall through pegs and pile into a bell curve" />
   )
 }

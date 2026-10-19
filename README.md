@@ -8,19 +8,20 @@ Live at https://kdoesstuff.github.io/QuantDesk/ (GitHub Pages, deployed by `.git
 ```
 npm install
 npm run dev       # http://localhost:5173
-npm run check     # typecheck, lint, storage tests; the deploy runs this first
+npm run check     # typecheck, lint, storage tests, generator fuzz (78,000 items, fair values against simulation); the deploy runs this first
 npm run build     # static output in dist/
 npm run preview   # serve dist/ locally
 npm run smoke     # opens every page at laptop and phone widths (needs playwright)
 ```
 
 ## What is in it
-- Speed: Speed arithmetic (Zetamac format), 80 in 8 (Optiver format), Sequences, Fractions to decimals, Percentages.
-- Markets: Dice market, Cards market, Make me a market, Betting board, Kelly sizing, ETF arbitrage, Event contracts.
-- Prediction: Dutch book, The race, Evidence stream, Event market maker.
+- Speed: Speed arithmetic (Zetamac format), 80 in 8 (Optiver format), Sequences (18 rule families), Fractions to decimals, Percentages, Mental tricks (nine shortcuts).
+- Markets: Dice market, Cards market, Dice games market (a game in a sentence, a market on its expected payout), Make me a market, Betting board (six proposition families), Kelly sizing, ETF arbitrage, Event contracts (ten variants including the classic conditional-probability traps).
+- Prediction: Dutch book, The race, Evidence stream, Event market maker, Stop or roll (optimal stopping, scored decision by decision).
 - Estimation: Fermi, with 90 percent intervals and the decomposition shown after every answer.
 - Cognitive: Memory grid (visual span), Task switch (switch cost), Intercept (timing lean), Balloon (risk, with colours to learn).
 - Progress: activity, score over time, bests, and what to work on.
+- Every question game's result page has a Review: each wrong, skipped or timed-out question with your answer, the right answer and the approach written with that question's numbers. Approaches come from the generators (`how` on every item), so they are never generic.
 - Insights on every result page and a focus block on every settings page. `#/method` explains the statistics and the references.
 
 ## Layout

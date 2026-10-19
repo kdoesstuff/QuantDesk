@@ -1,4 +1,4 @@
-import { pick, rint, round } from '../../../lib/random'
+import { pick, rint, round, shuffle } from '../../../lib/random'
 import { durationLabel } from '../../../lib/config'
 import { Seg, Setting } from '../../shared/Frames'
 import type { Item, TypedSpec } from '../spec'
@@ -22,9 +22,24 @@ const NAMES = ['ABC', 'DLF', 'HPQ', 'ITC', 'KLM', 'MRF', 'NTC', 'PQR', 'RIL', 'S
 function weights(n: number, level: number): number[] {
   if (level === 1) {
     const sets: Record<number, number[][]> = {
-      3: [[50, 30, 20], [40, 40, 20], [60, 20, 20], [50, 25, 25]],
-      4: [[40, 30, 20, 10], [25, 25, 25, 25], [40, 20, 20, 20], [30, 30, 20, 20]],
-      5: [[40, 20, 20, 10, 10], [30, 20, 20, 20, 10], [20, 20, 20, 20, 20], [50, 20, 10, 10, 10]],
+      3: [
+        [50, 30, 20],
+        [40, 40, 20],
+        [60, 20, 20],
+        [50, 25, 25],
+      ],
+      4: [
+        [40, 30, 20, 10],
+        [25, 25, 25, 25],
+        [40, 20, 20, 20],
+        [30, 30, 20, 20],
+      ],
+      5: [
+        [40, 20, 20, 10, 10],
+        [30, 20, 20, 20, 10],
+        [20, 20, 20, 20, 20],
+        [50, 20, 10, 10, 10],
+      ],
     }
     return pick(sets[n])
   }
@@ -40,11 +55,16 @@ function weights(n: number, level: number): number[] {
 function next(c: EtfConfig): Item {
   const n = c.names
   const w = weights(n, c.level)
-  const names = [...NAMES].sort(() => Math.random() - 0.5).slice(0, n)
+  const names = shuffle(NAMES).slice(0, n)
   const prices = Array.from({ length: n }, () => (c.level === 1 ? rint(10, 200) : round(rint(1000, 30000) / 100, c.level === 2 ? 1 : 2)))
-  const nav = round(w.reduce((s, wi, i) => s + (wi / 100) * prices[i], 0), 2)
+  const nav = round(
+    w.reduce((s, wi, i) => s + (wi / 100) * prices[i], 0),
+    2,
+  )
   // Gap between fair and the quote, in percent of NAV, smaller at higher levels.
-  const gapPct = pick(c.level === 1 ? [-3, -2, -1.5, 0, 0, 1.5, 2, 3] : c.level === 2 ? [-2, -1, -0.6, 0, 0, 0.6, 1, 2] : [-1, -0.5, -0.3, 0, 0, 0.3, 0.5, 1])
+  const gapPct = pick(
+    c.level === 1 ? [-3, -2, -1.5, 0, 0, 1.5, 2, 3] : c.level === 2 ? [-2, -1, -0.6, 0, 0, 0.6, 1, 2] : [-1, -0.5, -0.3, 0, 0, 0.3, 0.5, 1],
+  )
   const half = round(nav * (c.level === 1 ? 0.004 : c.level === 2 ? 0.003 : 0.002), 2)
   const mid = round(nav * (1 + gapPct / 100), 2)
   const bid = round(mid - half, 2)
@@ -60,6 +80,13 @@ function next(c: EtfConfig): Item {
     options,
     correctIndex: options.indexOf(answer),
     detail: names.map((nm, i) => ({ label: `${nm} ${w[i]}%`, value: prices[i].toFixed(c.level === 1 ? 0 : 2) })),
+    how: `Fair value is the weighted sum: ${names.map((nm, i) => `${nm} ${w[i]}% × ${prices[i].toFixed(c.level === 1 ? 0 : 2)} = ${round((w[i] / 100) * prices[i], 2)}`).join(', ')}, total ${nav.toFixed(2)}. The ETF is ${bid.toFixed(2)} bid, ${ask.toFixed(2)} offered. ${
+      answer === 'No trade'
+        ? `Fair sits inside the quote, so neither side has an edge: no trade.`
+        : answer.startsWith('Buy')
+          ? `The ask ${ask.toFixed(2)} is below fair ${nav.toFixed(2)}: buy the ETF at ${ask.toFixed(2)} and sell the basket for ${nav.toFixed(2)}, ${edgeBps} bps of edge.`
+          : `The bid ${bid.toFixed(2)} is above fair ${nav.toFixed(2)}: sell the ETF at ${bid.toFixed(2)} and buy the basket for ${nav.toFixed(2)}, ${edgeBps} bps of edge.`
+    }`,
     tags: { names: n, level: c.level, direction: answer, edgeBps, nav, gapPct: Math.abs(gapPct) },
   }
 }
@@ -68,16 +95,31 @@ function Settings({ cfg, setCfg }: { cfg: EtfConfig; setCfg: (f: (c: EtfConfig) 
   return (
     <>
       <Setting title="Clock">
-        <Seg options={[120, 180, 300] as const} value={cfg.durationSec} onChange={(d) => setCfg((c) => ({ ...c, durationSec: d }))} label="Duration" format={durationLabel} />
+        <Seg
+          options={[120, 180, 300] as const}
+          value={cfg.durationSec}
+          onChange={(d) => setCfg((c) => ({ ...c, durationSec: d }))}
+          label="Duration"
+          format={durationLabel}
+        />
       </Setting>
       <Setting title="Names in the basket">
         <Seg options={[3, 4, 5] as const} value={cfg.names} onChange={(n) => setCfg((c) => ({ ...c, names: n }))} label="Names" />
       </Setting>
-      <Setting title="Level" note="Level 1 has round prices and simple weights. Level 3 has two-decimal prices, odd weights and gaps of half a percent.">
+      <Setting
+        title="Level"
+        note="Level 1 has round prices and simple weights. Level 3 has two-decimal prices, odd weights and gaps of half a percent."
+      >
         <Seg options={[1, 2, 3] as const} value={cfg.level} onChange={(l) => setCfg((c) => ({ ...c, level: l }))} label="Level" />
       </Setting>
       <Setting title="Wrong call">
-        <Seg options={[0, 1] as const} value={cfg.penalty} onChange={(p) => setCfg((c) => ({ ...c, penalty: p }))} label="Penalty" format={(p) => (p === 0 ? 'No penalty' : 'Minus 1')} />
+        <Seg
+          options={[0, 1] as const}
+          value={cfg.penalty}
+          onChange={(p) => setCfg((c) => ({ ...c, penalty: p }))}
+          label="Penalty"
+          format={(p) => (p === 0 ? 'No penalty' : 'Minus 1')}
+        />
       </Setting>
     </>
   )
@@ -98,7 +140,11 @@ export const etfArbSpec: TypedSpec<EtfConfig> = {
   unit: ' pts',
   hint: 'Keys 1 to 3, Enter to skip, Esc to stop',
   breakdowns: [
-    { title: 'By right call', key: (e) => String(e.tags?.direction ?? ''), order: ['Buy ETF, sell basket', 'No trade', 'Sell ETF, buy basket'] },
+    {
+      title: 'By right call',
+      key: (e) => String(e.tags?.direction ?? ''),
+      order: ['Buy ETF, sell basket', 'No trade', 'Sell ETF, buy basket'],
+    },
     {
       title: 'By size of the gap',
       key: (e) => {

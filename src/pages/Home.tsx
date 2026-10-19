@@ -9,7 +9,7 @@ const DiceField = lazy(() => import('../components/DiceField'))
 
 const descriptions: Record<string, string> = {
   '/drill/speed-arithmetic': 'Typed answers against a clock. The Zetamac format, with history.',
-  '/drill/eighty-in-eight': 'Eighty multiple-choice questions, eight minutes, minus one for a miss.',
+  '/drill/eighty-in-eight': 'Eighty questions, eight minutes, minus one for a miss. Typed, or four options like the real test.',
   '/drill/sequences': 'Next term in the pattern. The Flow Traders and Maven test.',
   '/drill/fractions': 'Sevenths, thirteenths, sixteenths, to five places, from memory.',
   '/drill/percentages': 'Basis points, compound moves, reverse percentages, margins.',
@@ -24,6 +24,9 @@ const descriptions: Record<string, string> = {
   '/drill/evidence': 'Flips arrive, the posterior moves, the market updates badly. You update well.',
   '/drill/event-maker': 'Quote both sides on an event. Some traders know the answer. Read the tape, move your prices.',
   '/drill/dutch-book': 'Related contracts, one price that breaks the rules of probability. Name the free money.',
+  '/drill/tricks': 'Nine mental shortcuts, one per family. The review names the trick for every slip.',
+  '/drill/dice-games': 'A dice game in a sentence, a market on its expected payout. Compute fair, then trade it or quote it.',
+  '/drill/stop-or-roll': 'Roll up to n times, keep the last one you take. Scored decision by decision against the optimal rule.',
   '/drill/fermi': 'Order-of-magnitude estimates with confidence intervals, scored on a log scale.',
   '/drill/memory-grid': 'Cells flash; rebuild the pattern.',
   '/drill/task-switch': 'Two rules, one stimulus, no warning when the rule changes.',

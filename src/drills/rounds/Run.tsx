@@ -78,6 +78,7 @@ export default function RoundsRun<C extends object, S extends Scenario, D>({ spe
         correct: out.correct,
         points: out.points,
         tags: { ...sc.tags, ...out.tags, timedOut: d === null },
+        how: out.correct ? undefined : out.how,
       })
       scoreRef.current += out.points
       setScore(scoreRef.current)

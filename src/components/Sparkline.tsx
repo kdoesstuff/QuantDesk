@@ -1,15 +1,7 @@
 import { line as d3line, scaleLinear, curveMonotoneX } from 'd3'
 
 /** A small, quiet line of a series. Dots only on the last point. */
-export default function Sparkline({
-  values,
-  height = 48,
-  width = 240,
-}: {
-  values: number[]
-  height?: number
-  width?: number
-}) {
+export default function Sparkline({ values, height = 48, width = 240 }: { values: number[]; height?: number; width?: number }) {
   if (values.length === 0) return null
   const pad = 6
   const x = scaleLinear()

@@ -17,6 +17,8 @@ interface Position {
   tick: number
   trueP: number
   marketP: number
+  /** The state when the position was taken, for the review. */
+  explain: string
 }
 
 interface RoundState<S> {
@@ -67,7 +69,21 @@ export default function LiveRun<C extends LiveConfig, S>({ spec }: { spec: LiveS
     const p = P.trueP(state, cfg)
     const marketP = clamp(p + (style === 'efficient' ? 0 : gauss() * 0.04))
     const q = quote(marketP, cfg.half)
-    return { state, tick: 0, marketP, alpha: alphaFor(style), style, bid: q.bid, ask: q.ask, position: null, bestEdge: 0, bestEdgeTick: 0, path: [{ t: 0, p, m: marketP }], done: false, outcome: null }
+    return {
+      state,
+      tick: 0,
+      marketP,
+      alpha: alphaFor(style),
+      style,
+      bid: q.bid,
+      ask: q.ask,
+      position: null,
+      bestEdge: 0,
+      bestEdgeTick: 0,
+      path: [{ t: 0, p, m: marketP }],
+      done: false,
+      outcome: null,
+    }
   }
 
   const finish = useCallback(async () => {
@@ -145,6 +161,12 @@ export default function LiveRun<C extends LiveConfig, S>({ spec }: { spec: LiveS
     const missed = !pos && rs.bestEdge >= 4
     const n = rs.path.length
     const entryFrac = pos ? pos.tick / Math.max(1, n - 1) : 1
+    const wrong = pos ? edge <= 0 : rs.bestEdge >= 4
+    const how = !wrong
+      ? undefined
+      : pos
+        ? `${pos.explain} So fair was ${Math.round(pos.trueP * 100)}c when you ${pos.side === 'buy' ? `bought at the ask ${pos.price}c` : `sold at the bid ${pos.price}c`}, giving expected edge ${edge.toFixed(1)}c. ${pos.side === 'buy' ? 'Buying only pays when the ask is below fair' : 'Selling only pays when the bid is above fair'}; the ${rs.style} market was ${pos.side === 'buy' ? 'above' : 'below'} fair there. The resolution (${o ? 'YES' : 'NO'}) is one draw and does not judge the trade.`
+        : `You passed, but at tick ${rs.bestEdgeTick} the quote was ${rs.bestEdge.toFixed(1)}c away from fair, the biggest gap of the round. ${rs.style === 'lag' ? 'A lagging market moves toward fair slowly, so right after the process moves the stale quote is the trade.' : rs.style === 'jumpy' ? 'A jumpy market overshoots fair, so fade the move right after a big jump.' : 'This market tracked fair closely, so the edge was brief.'} ${P.explain(rs.state, cfg)}`
     logs.current.push({
       kind: pos ? pos.side : 'pass',
       prompt: `${P.describe(rs.state, cfg)}, ${rs.style} market`,
@@ -154,6 +176,7 @@ export default function LiveRun<C extends LiveConfig, S>({ spec }: { spec: LiveS
       misses: 0,
       correct: pos ? edge > 0 : rs.bestEdge < 4,
       points: round(edge, 1),
+      how,
       tags: {
         side: pos ? pos.side : 'pass',
         bot: rs.style,
@@ -164,7 +187,15 @@ export default function LiveRun<C extends LiveConfig, S>({ spec }: { spec: LiveS
         entry: pos ? (entryFrac < 0.34 ? 'early' : entryFrac < 0.67 ? 'middle' : 'late') : 'none',
         entryTrueP: pos ? round(pos.trueP, 2) : 0,
         entryMarketP: pos ? round(pos.marketP, 2) : 0,
-        lean: pos ? (pos.side === 'buy' ? (pos.trueP * 100 > pos.price ? 'right side' : 'wrong side') : pos.price > pos.trueP * 100 ? 'right side' : 'wrong side') : 'none',
+        lean: pos
+          ? pos.side === 'buy'
+            ? pos.trueP * 100 > pos.price
+              ? 'right side'
+              : 'wrong side'
+            : pos.price > pos.trueP * 100
+              ? 'right side'
+              : 'wrong side'
+          : 'none',
         outcome: o,
         ticks: n,
         path: JSON.stringify(rs.path.map((x) => [round(x.p, 3), round(x.m, 3)])),
@@ -198,7 +229,17 @@ export default function LiveRun<C extends LiveConfig, S>({ spec }: { spec: LiveS
       const cur = rsRef.current
       if (phase !== 'running' || cur.done || cur.position) return
       const p = P.trueP(cur.state, cfg)
-      setRs({ ...cur, position: { side, price: side === 'buy' ? cur.ask : cur.bid, tick: cur.tick, trueP: p, marketP: cur.marketP } })
+      setRs({
+        ...cur,
+        position: {
+          side,
+          price: side === 'buy' ? cur.ask : cur.bid,
+          tick: cur.tick,
+          trueP: p,
+          marketP: cur.marketP,
+          explain: P.explain(cur.state, cfg),
+        },
+      })
     },
     [P, cfg, phase],
   )

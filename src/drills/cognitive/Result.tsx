@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom'
 import { CategoryTable, Missing, ResultFrame, useAttempt } from '../shared/Frames'
 import PaceChart from '../shared/PaceChart'
 import InsightsPanel from '../../insights/InsightsPanel'
+import Review from '../shared/Review'
 import { breakdownRows } from '../typed/Result'
 import type { CognitiveSpec } from './spec'
 
@@ -25,11 +26,16 @@ export default function CognitiveResult<C extends object>({ spec }: { spec: Cogn
     >
       <InsightsPanel drill={spec.id} attempt={attempt} />
       {spec.Summary ? <spec.Summary attempt={attempt} /> : null}
+      {spec.review && <Review events={attempt.answers} intro={spec.review} />}
       {spec.pace !== false && decided.length > 1 && (
         <section className="result__section">
           <h2>Pace</h2>
           <p className="muted">{spec.paceLabel ?? 'Seconds per trial, in order. Blue is right, red is wrong.'}</p>
-          <PaceChart ms={decided.map((l) => l.ms)} colours={decided.map((l) => (l.correct ? 'var(--blue-2)' : 'var(--wrong)'))} label="Seconds per trial" />
+          <PaceChart
+            ms={decided.map((l) => l.ms)}
+            colours={decided.map((l) => (l.correct ? 'var(--blue-2)' : 'var(--wrong)'))}
+            label="Seconds per trial"
+          />
         </section>
       )}
       {spec.breakdowns.map((b) => {

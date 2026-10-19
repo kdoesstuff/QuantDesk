@@ -44,6 +44,17 @@ function s(x: number, places = 2) {
   return String(round(x, places))
 }
 
+function howOf(p: number, base: number, ans: number) {
+  const tenth = base / 10
+  if (p % 10 === 0) return `10% of ${base} is ${s(tenth)}, so ${p}% is ${p / 10} × ${s(tenth)} = ${s(ans)}.`
+  if (p % 5 === 0)
+    return `10% of ${base} is ${s(tenth)} and 5% is ${s(tenth / 2)}. ${p}% = ${Math.floor(p / 10)} × ${s(tenth)} + ${s(tenth / 2)} = ${s(ans)}.`
+  if (p === 12.5) return `12.5% is one eighth: ${base} ÷ 8 = ${s(ans)}.`
+  if (p < 10) return `1% of ${base} is ${s(base / 100)}, so ${p}% is ${p} × ${s(base / 100)} = ${s(ans)}.`
+  const t = Math.floor(p / 10) * 10
+  return `Split ${p}% into ${t}% and ${s(p - t)}%: ${t}% of ${base} is ${s((base * t) / 100)}, ${s(p - t)}% is ${s((base * (p - t)) / 100)}, total ${s(ans)}.`
+}
+
 function next(c: PercentagesConfig, prev?: Item): Item {
   const types = c.types.length ? c.types : ALL_TYPES
   let type = pick(types)
@@ -61,7 +72,14 @@ function next(c: PercentagesConfig, prev?: Item): Item {
           kind: type,
           prompt: `${p}% of ${base}`,
           answer: s(ans),
-          tags: { type, level: L, pct: p, decimals: String(ans).includes('.') ? String(ans).split('.')[1].length : 0, digits: String(Math.round(ans)).length },
+          how: howOf(p, base, ans),
+          tags: {
+            type,
+            level: L,
+            pct: p,
+            decimals: String(ans).includes('.') ? String(ans).split('.')[1].length : 0,
+            digits: String(Math.round(ans)).length,
+          },
         }
       }
       case 'change': {
@@ -77,7 +95,15 @@ function next(c: PercentagesConfig, prev?: Item): Item {
           prompt: `${a} to ${b}`,
           sub: 'percent change',
           answer: s(p, 1),
-          tags: { type, level: L, pct: p, negative: p < 0, decimals: Number.isInteger(p) ? 0 : 1, digits: String(Math.abs(Math.round(p))).length },
+          how: `Change over start: (${b} − ${a}) ÷ ${a} = ${s(b - a)} ÷ ${a} = ${s((b - a) / a, 4)}, so ${s(p, 1)}%. ${p < 0 ? 'A fall is negative.' : ''}`.trim(),
+          tags: {
+            type,
+            level: L,
+            pct: p,
+            negative: p < 0,
+            decimals: Number.isInteger(p) ? 0 : 1,
+            digits: String(Math.abs(Math.round(p))).length,
+          },
         }
       }
       case 'reverse': {
@@ -92,6 +118,7 @@ function next(c: PercentagesConfig, prev?: Item): Item {
           prompt: `${p > 0 ? 'up' : 'down'} ${Math.abs(p)}% to ${b}`,
           sub: 'what was it before',
           answer: s(a),
+          how: `${p > 0 ? 'Up' : 'Down'} ${Math.abs(p)}% means the new value is ${s(1 + p / 100, 3)} times the old one. Divide, never subtract the percent: ${b} ÷ ${s(1 + p / 100, 3)} = ${s(a)}. Check: ${s(a)} × ${s(1 + p / 100, 3)} = ${b}.`,
           tags: { type, level: L, pct: p, negative: p < 0, decimals: 0, digits: String(a).length },
         }
       }
@@ -106,15 +133,41 @@ function next(c: PercentagesConfig, prev?: Item): Item {
           prompt: `${x > 0 ? '+' : ''}${x}% then ${y > 0 ? '+' : ''}${y}%`,
           sub: 'net change in percent',
           answer: s(net, 1),
-          tags: { type, level: L, pct: x, pct2: y, negative: net < 0, mixed: Math.sign(x) !== Math.sign(y), decimals: Number.isInteger(net) ? 0 : 1 },
+          how: `Multiply the factors, do not add the percents: ${s(1 + x / 100, 2)} × ${s(1 + y / 100, 2)} = ${s((1 + x / 100) * (1 + y / 100), 4)}, which is ${s(net, 1)}%. Shortcut: x + y + xy/100 = ${x} + ${y} + ${s((x * y) / 100, 2)} = ${s(net, 1)}.`,
+          tags: {
+            type,
+            level: L,
+            pct: x,
+            pct2: y,
+            negative: net < 0,
+            mixed: Math.sign(x) !== Math.sign(y),
+            decimals: Number.isInteger(net) ? 0 : 1,
+          },
         }
       }
       case 'bps': {
         const variant = L === 1 ? 'convert' : pick(['convert', 'move', 'move'])
         if (variant === 'convert') {
-          const bps = pick([5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 90, 100, 120, 125, 150, 175, 200, 250, 300, 350, 400, 450, 500, 750, 1000])
-          if (chance(0.5)) return { kind: type, prompt: `${bps} bps`, sub: 'in percent', answer: s(bps / 100), tags: { type, level: L, variant, decimals: 2 } }
-          return { kind: type, prompt: `${s(bps / 100)}%`, sub: 'in basis points', answer: String(bps), tags: { type, level: L, variant, decimals: 0 } }
+          const bps = pick([
+            5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 90, 100, 120, 125, 150, 175, 200, 250, 300, 350, 400, 450, 500, 750, 1000,
+          ])
+          if (chance(0.5))
+            return {
+              kind: type,
+              prompt: `${bps} bps`,
+              sub: 'in percent',
+              answer: s(bps / 100),
+              how: `One basis point is a hundredth of a percent, so divide by 100: ${bps} ÷ 100 = ${s(bps / 100)}%.`,
+              tags: { type, level: L, variant, decimals: 2 },
+            }
+          return {
+            kind: type,
+            prompt: `${s(bps / 100)}%`,
+            sub: 'in basis points',
+            answer: String(bps),
+            how: `One percent is 100 basis points, so multiply by 100: ${s(bps / 100)} × 100 = ${bps} bps.`,
+            tags: { type, level: L, variant, decimals: 0 },
+          }
         }
         const a = pick([100, 200, 250, 400, 500, 1000, 1250, 2000, 2500, 4000, 5000, 8000, 10000])
         const need = 10000 / gcd(a, 10000)
@@ -126,6 +179,7 @@ function next(c: PercentagesConfig, prev?: Item): Item {
           prompt: `${a} to ${b}`,
           sub: 'move in basis points',
           answer: String(bps),
+          how: `The move is ${s(b - a)} on ${a}, which is ${s(((b - a) / a) * 100, 3)}%. Times 100 for basis points: ${bps} bps. Or: one bp of ${a} is ${s(a / 10000, 4)}, and ${s(b - a)} ÷ ${s(a / 10000, 4)} = ${bps}.`,
           tags: { type, level: L, variant, negative: bps < 0, decimals: 0, digits: String(Math.abs(bps)).length },
         }
       }
@@ -140,6 +194,10 @@ function next(c: PercentagesConfig, prev?: Item): Item {
           prompt: `cost ${cost}, sold ${price}`,
           sub: variant === 'margin' ? 'margin in percent' : 'markup in percent',
           answer: s(m, 1),
+          how:
+            variant === 'margin'
+              ? `Margin is profit over the selling price: (${price} − ${cost}) ÷ ${price} = ${price - cost} ÷ ${price} = ${s(m, 1)}%. Markup would divide by cost instead.`
+              : `Markup is profit over cost: (${price} − ${cost}) ÷ ${cost} = ${price - cost} ÷ ${cost} = ${s(m, 1)}%. Margin would divide by the selling price instead.`,
           tags: { type, level: L, variant, decimals: Number.isInteger(m) ? 0 : 1, digits: String(Math.round(m)).length },
         }
       }
@@ -152,13 +210,24 @@ function Settings({ cfg, setCfg }: { cfg: PercentagesConfig; setCfg: (f: (c: Per
   return (
     <>
       <Setting title="Clock">
-        <Seg options={DURATIONS} value={cfg.durationSec} onChange={(d) => setCfg((c) => ({ ...c, durationSec: d }))} label="Duration" format={durationLabel} />
+        <Seg
+          options={DURATIONS}
+          value={cfg.durationSec}
+          onChange={(d) => setCfg((c) => ({ ...c, durationSec: d }))}
+          label="Duration"
+          format={durationLabel}
+        />
       </Setting>
       <Setting title="Level" note="Level 1 uses round percentages. Level 3 adds halves, odd percentages and larger bases.">
         <Seg options={[1, 2, 3] as const} value={cfg.level} onChange={(l) => setCfg((c) => ({ ...c, level: l }))} label="Level" />
       </Setting>
       <Setting title="Types" note="Answers are numbers only: percent change as 12.5, basis points as 125, money as 37.5.">
-        <Chips options={ALL_TYPES} value={cfg.types} onToggle={(t) => setCfg((c) => ({ ...c, types: toggleIn(c.types, t) }))} labels={TYPE_LABEL} />
+        <Chips
+          options={ALL_TYPES}
+          value={cfg.types}
+          onToggle={(t) => setCfg((c) => ({ ...c, types: toggleIn(c.types, t) }))}
+          labels={TYPE_LABEL}
+        />
       </Setting>
     </>
   )
@@ -171,7 +240,8 @@ export const percentagesSpec: TypedSpec<PercentagesConfig> = {
   mode: 'typed',
   defaults: { durationSec: 120, types: [...ALL_TYPES], level: 2 },
   configKey: (c) => `pct:${c.durationSec}:L${c.level}:${ALL_TYPES.filter((t) => c.types.includes(t)).join(',')}`,
-  describe: (c) => `${durationLabel(c.durationSec)}, level ${c.level}, ${c.types.length === ALL_TYPES.length ? 'all types' : `${c.types.length} types`}`,
+  describe: (c) =>
+    `${durationLabel(c.durationSec)}, level ${c.level}, ${c.types.length === ALL_TYPES.length ? 'all types' : `${c.types.length} types`}`,
   duration: (c) => c.durationSec,
   next,
   Settings,

@@ -17,6 +17,8 @@ export interface Finished {
 export interface CognitiveSpec<C extends object> extends BaseSpec<C> {
   Run: FC<{ cfg: C; onDone: (f: Finished) => void; onQuit: () => void }>
   Summary?: FC<{ attempt: Attempt<C> }>
+  /** When set, the result page lists the decisions that went wrong with this intro and each log's `how`. */
+  review?: string
   breakdowns: Breakdown[]
   pointsLabel: string
   places?: number

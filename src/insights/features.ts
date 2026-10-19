@@ -1,4 +1,38 @@
 import type { Attempt, DrillId, EventLog, Operation } from '../lib/types'
+import { FAMILY_LABEL as SEQ_LABEL } from '../drills/typed/specs/sequences'
+import { FAMILY_LABEL as EIGHTY_LABEL } from '../drills/typed/specs/eightyInEight'
+import { MODE_LABEL as FRAC_LABEL } from '../drills/typed/specs/fractions'
+import { TYPE_LABEL as PCT_LABEL } from '../drills/typed/specs/percentages'
+import { VARIANT_LABEL as KELLY_LABEL } from '../drills/typed/specs/kelly'
+import { VARIANT_LABEL as EVENT_LABEL } from '../drills/typed/specs/eventContracts'
+import { TRICK_LABEL } from '../drills/typed/specs/tricks'
+import { GAME_LABEL } from '../drills/rounds/specs/diceGames'
+import { CATEGORY_LABEL as FACT_LABEL } from '../drills/rounds/specs/facts'
+import { TOPIC_LABEL as FERMI_LABEL } from '../drills/rounds/specs/fermiQuestions'
+
+/** The human label for a generator id, so findings read "Percent change" rather than "Change". */
+export const LABELS: Partial<Record<DrillId, Record<string, string>>> = {
+  sequences: SEQ_LABEL,
+  'eighty-in-eight': EIGHTY_LABEL,
+  fractions: FRAC_LABEL,
+  percentages: PCT_LABEL,
+  kelly: KELLY_LABEL,
+  'event-contracts': EVENT_LABEL,
+  tricks: TRICK_LABEL,
+  'dice-games': GAME_LABEL,
+  'make-a-market': FACT_LABEL,
+  fermi: FERMI_LABEL,
+}
+function lab(drill: DrillId, id: string | undefined) {
+  const v = String(id ?? '')
+  return LABELS[drill]?.[v] ?? cap(v)
+}
+/** The generator id for a label, the inverse of `lab`, for settings patches. */
+export function idForLabel(drill: DrillId, label: string) {
+  const m = LABELS[drill]
+  if (m) for (const [k, v] of Object.entries(m)) if (v === label) return k
+  return label.charAt(0).toLowerCase() + label.slice(1)
+}
 
 /**
  * Featurizers turn a drill's raw logs into rows the analyzer can slice.
@@ -61,45 +95,79 @@ const t = (l: EventLog, k: string) => (l.tags && l.tags[k] !== undefined ? Strin
 const TAG_DIMS: Partial<Record<DrillId, (l: EventLog) => Record<string, string>>> = {
   'speed-arithmetic': arithmeticDims,
   'eighty-in-eight': (l) => ({
-    'Question type': cap(String(t(l, 'family') ?? '')),
+    'Question type': lab('eighty-in-eight', t(l, 'family')),
     'Answer shape': l.tags?.decimal ? 'Decimal answer' : l.tags?.negative ? 'Negative answer' : 'Whole answer',
   }),
   sequences: (l) => ({
-    Family: cap(String(t(l, 'family') ?? '')),
+    Family: lab('sequences', t(l, 'family')),
     'Answer size': Number(t(l, 'digits') ?? 0) <= 2 ? 'Up to 2 digits' : Number(t(l, 'digits')) === 3 ? '3 digits' : '4 or more digits',
     Level: `Level ${t(l, 'level') ?? '?'}`,
   }),
   fractions: (l) => ({
-    Mode: cap(String(t(l, 'mode') ?? '')),
+    Mode: lab('fractions', t(l, 'mode')),
     Denominator: `/${t(l, 'denominator') ?? '?'}`,
     'Leading zeros': Number(t(l, 'leadingZeros') ?? 0) > 0 ? 'Starts with 0.0' : 'No leading zero',
   }),
   percentages: (l) => ({
-    Type: cap(String(t(l, 'type') ?? '')),
+    Type: lab('percentages', t(l, 'type')),
     'Answer shape': l.tags?.negative ? 'Negative' : Number(t(l, 'decimals') ?? 0) > 0 ? 'With decimals' : 'Whole number',
   }),
   'dice-market': (l) => ({
     Mode: t(l, 'play') === 'take' ? 'Take' : 'Make',
-    'Market lean': t(l, 'market') === 'cheap' ? 'Offered below fair' : t(l, 'market') === 'rich' ? 'Bid above fair' : t(l, 'market') === 'fair' ? 'Around fair' : 'Make mode',
-    'Your mid': t(l, 'skewSign') === 'high' ? 'Mid above fair' : t(l, 'skewSign') === 'low' ? 'Mid below fair' : t(l, 'skewSign') === 'centred' ? 'Mid on fair' : 'Take mode',
+    'Market lean':
+      t(l, 'market') === 'cheap'
+        ? 'Offered below fair'
+        : t(l, 'market') === 'rich'
+          ? 'Bid above fair'
+          : t(l, 'market') === 'fair'
+            ? 'Around fair'
+            : 'Make mode',
+    'Your mid':
+      t(l, 'skewSign') === 'high'
+        ? 'Mid above fair'
+        : t(l, 'skewSign') === 'low'
+          ? 'Mid below fair'
+          : t(l, 'skewSign') === 'centred'
+            ? 'Mid on fair'
+            : 'Take mode',
     Hidden: `${t(l, 'hidden') ?? '?'} hidden`,
   }),
   'cards-market': (l) => ({
     Mode: t(l, 'play') === 'take' ? 'Take' : 'Make',
-    'Market lean': t(l, 'market') === 'cheap' ? 'Offered below fair' : t(l, 'market') === 'rich' ? 'Bid above fair' : t(l, 'market') === 'fair' ? 'Around fair' : 'Make mode',
-    'Your mid': t(l, 'skewSign') === 'high' ? 'Mid above fair' : t(l, 'skewSign') === 'low' ? 'Mid below fair' : t(l, 'skewSign') === 'centred' ? 'Mid on fair' : 'Take mode',
+    'Market lean':
+      t(l, 'market') === 'cheap'
+        ? 'Offered below fair'
+        : t(l, 'market') === 'rich'
+          ? 'Bid above fair'
+          : t(l, 'market') === 'fair'
+            ? 'Around fair'
+            : 'Make mode',
+    'Your mid':
+      t(l, 'skewSign') === 'high'
+        ? 'Mid above fair'
+        : t(l, 'skewSign') === 'low'
+          ? 'Mid below fair'
+          : t(l, 'skewSign') === 'centred'
+            ? 'Mid on fair'
+            : 'Take mode',
     Hidden: `${t(l, 'hidden') ?? '?'} hidden`,
   }),
   'make-a-market': (l) => ({
-    Topic: cap(String(t(l, 'category') ?? '')),
+    Topic: lab('make-a-market', t(l, 'category')),
     Width: t(l, 'tightness') === 'tight' ? 'Tight quote' : t(l, 'tightness') === 'medium' ? 'Medium quote' : 'Wide quote',
     Lean: t(l, 'lean') === 'high' ? 'Quoted high' : t(l, 'lean') === 'low' ? 'Quoted low' : 'Centred',
   }),
   'betting-board': (l) => ({
-    Outcome: l.correct ? 'All right' : Number(t(l, 'missed') ?? 0) > 0 && Number(t(l, 'bad') ?? 0) > 0 ? 'Missed and bad' : Number(t(l, 'missed') ?? 0) > 0 ? 'Missed an edge' : 'Took a bad bet',
+    Outcome: l.correct
+      ? 'All right'
+      : Number(t(l, 'missed') ?? 0) > 0 && Number(t(l, 'bad') ?? 0) > 0
+        ? 'Missed and bad'
+        : Number(t(l, 'missed') ?? 0) > 0
+          ? 'Missed an edge'
+          : 'Took a bad bet',
   }),
   kelly: (l) => ({
-    Variant: cap(String(t(l, 'variant') ?? '')),
+    Variant: lab('kelly', t(l, 'variant')),
     'Stake size': cap(String(t(l, 'size') ?? '')),
   }),
   'etf-arb': (l) => ({
@@ -108,11 +176,18 @@ const TAG_DIMS: Partial<Record<DrillId, (l: EventLog) => Record<string, string>>
     Names: `${t(l, 'names') ?? '?'} names`,
   }),
   'event-contracts': (l) => ({
-    Variant: cap(String(t(l, 'variant') ?? '')),
-    'Price level': Number(t(l, 'answer') ?? 50) < 10 ? 'Under 10c' : Number(t(l, 'answer')) < 40 ? '10c to 40c' : Number(t(l, 'answer')) < 70 ? '40c to 70c' : '70c and up',
+    Variant: lab('event-contracts', t(l, 'variant')),
+    'Price level':
+      Number(t(l, 'answer') ?? 50) < 10
+        ? 'Under 10c'
+        : Number(t(l, 'answer')) < 40
+          ? '10c to 40c'
+          : Number(t(l, 'answer')) < 70
+            ? '40c to 70c'
+            : '70c and up',
   }),
   fermi: (l) => ({
-    Topic: cap(String(t(l, 'topic') ?? '')),
+    Topic: lab('fermi', t(l, 'topic')),
     Lean: t(l, 'lean') === 'high' ? 'Guessed high' : t(l, 'lean') === 'low' ? 'Guessed low' : 'Close',
   }),
   'memory-grid': (l) => ({
@@ -133,13 +208,60 @@ const TAG_DIMS: Partial<Record<DrillId, (l: EventLog) => Record<string, string>>
     'After a pop': l.tags?.afterPop ? 'Right after a pop' : 'Otherwise',
   }),
   'dutch-book': (l) => ({
-    Rule: { andCap: '"And" above a leg', andFloor: '"And" below the floor', orIdentity: '"Or" off the identity', complement: 'Complements not 100', orFloor: '"Or" below a leg', none: 'Consistent board' }[String(t(l, 'kind') ?? 'none')] ?? 'Other',
+    Rule:
+      {
+        andCap: '"And" above a leg',
+        andFloor: '"And" below the floor',
+        orIdentity: '"Or" off the identity',
+        complement: 'Complements not 100',
+        orFloor: '"Or" below a leg',
+        none: 'Consistent board',
+      }[String(t(l, 'kind') ?? 'none')] ?? 'Other',
     Level: `Level ${t(l, 'level') ?? '?'}`,
   }),
   race: liveDims,
   evidence: liveDims,
+  tricks: (l) => ({
+    Trick: lab('tricks', t(l, 'trick')),
+    'Answer size': Number(t(l, 'digits') ?? 0) <= 3 ? 'Up to 3 digits' : Number(t(l, 'digits')) === 4 ? '4 digits' : '5 or more',
+    Level: `Level ${t(l, 'level') ?? '?'}`,
+  }),
+  'dice-games': (l) => ({
+    Game: lab('dice-games', t(l, 'family')),
+    Mode: t(l, 'play') === 'take' ? 'Take' : 'Make',
+    'Market lean':
+      t(l, 'market') === 'cheap'
+        ? 'Offered below fair'
+        : t(l, 'market') === 'rich'
+          ? 'Bid above fair'
+          : t(l, 'market') === 'fair'
+            ? 'Around fair'
+            : 'Make mode',
+    'Your mid':
+      t(l, 'skewSign') === 'high'
+        ? 'Mid above fair'
+        : t(l, 'skewSign') === 'low'
+          ? 'Mid below fair'
+          : t(l, 'skewSign') === 'centred'
+            ? 'Mid on fair'
+            : 'Take mode',
+    Die: `d${t(l, 'sides') ?? 6}`,
+  }),
+  'stop-or-roll': (l) => ({
+    What: t(l, 'mode') === 'cards' ? 'Cards' : 'Dice',
+    'Draws left': `${t(l, 'left') ?? '?'} left`,
+    'Value against the bar': cap(String(t(l, 'band') ?? '')),
+    Action: t(l, 'action') === 'stop' ? 'Stopped' : 'Went on',
+  }),
   'event-maker': (l) => ({
-    'Came before': t(l, 'after') === 'buy' ? 'After a buy' : t(l, 'after') === 'sell' ? 'After a sell' : t(l, 'after') === 'none' ? 'After no trade' : 'First quote',
+    'Came before':
+      t(l, 'after') === 'buy'
+        ? 'After a buy'
+        : t(l, 'after') === 'sell'
+          ? 'After a sell'
+          : t(l, 'after') === 'none'
+            ? 'After no trade'
+            : 'First quote',
     Width: String(t(l, 'widthCall') ?? 'about right'),
     Lean: t(l, 'lean') === 'high' ? 'Mid too high' : t(l, 'lean') === 'low' ? 'Mid too low' : 'Mid about right',
     'Informed share': `${Math.round(Number(t(l, 'informedShare') ?? 0) * 100)}% informed`,
@@ -150,7 +272,14 @@ function liveDims(l: EventLog): Record<string, string> {
   return {
     Market: t(l, 'bot') === 'lag' ? 'Lagging market' : t(l, 'bot') === 'jumpy' ? 'Jumpy market' : 'Efficient market',
     Action: t(l, 'side') === 'buy' ? 'Bought' : t(l, 'side') === 'sell' ? 'Sold' : l.tags?.missed ? 'Passed with edge on offer' : 'Passed',
-    Entry: t(l, 'entry') === 'early' ? 'Early entry' : t(l, 'entry') === 'middle' ? 'Mid entry' : t(l, 'entry') === 'late' ? 'Late entry' : 'No entry',
+    Entry:
+      t(l, 'entry') === 'early'
+        ? 'Early entry'
+        : t(l, 'entry') === 'middle'
+          ? 'Mid entry'
+          : t(l, 'entry') === 'late'
+            ? 'Late entry'
+            : 'No entry',
   }
 }
 
@@ -173,7 +302,16 @@ export function featurize(drill: DrillId, attempts: Attempt[]): Row[] {
       const dims = f(l)
       // Position in run is a dimension too.
       dims['Part of run'] = i < n / 3 ? 'First third' : i < (2 * n) / 3 ? 'Middle third' : 'Last third'
-      rows.push({ dims, ms: l.ms, correct: l.correct && l.misses === 0 ? 1 : 0, pos: n > 1 ? i / (n - 1) : 0, ts: a.ts, attemptId: a.id, configKey: a.configKey, points: l.points })
+      rows.push({
+        dims,
+        ms: l.ms,
+        correct: l.correct && l.misses === 0 ? 1 : 0,
+        pos: n > 1 ? i / (n - 1) : 0,
+        ts: a.ts,
+        attemptId: a.id,
+        configKey: a.configKey,
+        points: l.points,
+      })
     })
   }
   return rows

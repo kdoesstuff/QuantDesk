@@ -27,7 +27,12 @@ export function Choices<T extends string>({
   return (
     <div className="choices choices--row">
       {options.map((o) => (
-        <button key={o.value} className={'choice' + (o.tone ? ` choice--${o.tone}` : '')} onClick={() => onPick(o.value)} disabled={disabled}>
+        <button
+          key={o.value}
+          className={'choice' + (o.tone ? ` choice--${o.tone}` : '')}
+          onClick={() => onPick(o.value)}
+          disabled={disabled}
+        >
           <span className="choice__key">{o.key.toUpperCase()}</span>
           <span>{o.label}</span>
         </button>

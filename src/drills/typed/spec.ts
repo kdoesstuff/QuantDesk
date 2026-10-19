@@ -21,6 +21,8 @@ export interface Item {
   detail?: { label: string; value: string }[]
   /** Enter-submit mode: accept when within this of the answer. */
   tolerance?: number
+  /** How to get the answer, in a few sentences with the numbers. Shown in the review when the item went wrong. */
+  how?: string
 }
 
 export interface Breakdown {
@@ -35,7 +37,8 @@ export interface TypedSpec<C extends object> {
   id: DrillId
   title: string
   blurb: string
-  mode: 'typed' | 'choice'
+  /** Typed answers or four options. A function lets a setting decide. */
+  mode: 'typed' | 'choice' | ((c: C) => 'typed' | 'choice')
   defaults: C
   configKey: (c: C) => string
   /** One line for the Progress page. */
@@ -51,6 +54,8 @@ export interface TypedSpec<C extends object> {
   inputPattern?: RegExp
   /** Check on Enter instead of on every keystroke (for answers with a tolerance). */
   submitOnEnter?: boolean
+  /** With submitOnEnter: a wrong submission ends the question with the wrong points, and Enter on an empty field skips for free. Test conditions. */
+  oneShot?: boolean
   /** Points for right and wrong (choice mode). Default +1 / 0. */
   points?: (c: C) => { right: number; wrong: number }
   breakdowns: Breakdown[]
@@ -59,7 +64,11 @@ export interface TypedSpec<C extends object> {
   /** Short unit for the score, like " pts". */
   unit?: string
   /** Hint under the run screen. */
-  hint?: string
+  hint?: string | ((c: C) => string)
+}
+
+export function modeOf<C extends object>(spec: TypedSpec<C>, cfg: C): 'typed' | 'choice' {
+  return typeof spec.mode === 'function' ? spec.mode(cfg) : spec.mode
 }
 
 /** Normalise a typed numeric string so "0.5", ".5", "+.50" compare equal. */

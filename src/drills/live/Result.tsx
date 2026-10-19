@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { CategoryTable, Missing, ResultFrame, useAttempt } from '../shared/Frames'
 import InsightsPanel from '../../insights/InsightsPanel'
+import Review from '../shared/Review'
 import { breakdownRows } from '../typed/Result'
 import type { LiveConfig, LiveSpec } from './spec'
 
@@ -16,7 +17,9 @@ function RoundPath({ path, side, tick }: { path: [number, number][]; side: strin
     <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} aria-hidden="true" className="live__mini">
       <path d={line(0)} fill="none" stroke="var(--blue-2)" strokeWidth="1.5" />
       <path d={line(1)} fill="none" stroke="var(--yellow)" strokeWidth="1.5" />
-      {side !== 'pass' && tick < path.length && <circle cx={x(tick)} cy={y(path[tick][1])} r="3.5" fill={side === 'buy' ? 'var(--right)' : 'var(--wrong)'} />}
+      {side !== 'pass' && tick < path.length && (
+        <circle cx={x(tick)} cy={y(path[tick][1])} r="3.5" fill={side === 'buy' ? 'var(--right)' : 'var(--wrong)'} />
+      )}
     </svg>
   )
 }
@@ -31,7 +34,14 @@ export default function LiveResult<C extends LiveConfig, S>({ spec }: { spec: Li
   const missed = attempt.answers.filter((l) => l.tags?.missed).length
   const line = `${attempt.answers.length} rounds, ${traded.length} traded, ${attempt.correct} on the right side${missed ? `, ${missed} passed with edge on offer` : ''}. Realised ${realised >= 0 ? '+' : ''}${realised}. Score is expected edge in cents.`
   return (
-    <ResultFrame drill={spec.id} attempt={attempt} subtitle={`${spec.title}, ${spec.describe(attempt.config)}`} scoreText={(attempt.score > 0 ? '+' : '') + attempt.score.toFixed(0)} line={line} unit="c">
+    <ResultFrame
+      drill={spec.id}
+      attempt={attempt}
+      subtitle={`${spec.title}, ${spec.describe(attempt.config)}`}
+      scoreText={(attempt.score > 0 ? '+' : '') + attempt.score.toFixed(0)}
+      line={line}
+      unit="c"
+    >
       <InsightsPanel drill={spec.id} attempt={attempt} />
       {spec.Summary ? <spec.Summary attempt={attempt} /> : null}
       {spec.breakdowns.map((b) => {
@@ -44,6 +54,10 @@ export default function LiveResult<C extends LiveConfig, S>({ spec }: { spec: Li
           </section>
         )
       })}
+      <Review
+        events={attempt.answers}
+        intro="Rounds where the trade had no edge, or where you passed with real edge on offer, with the fair value worked out."
+      />
       <section className="result__section">
         <h2>Round by round</h2>
         <p className="muted">Blue is the true probability, yellow the market. The dot is your entry.</p>
@@ -64,7 +78,11 @@ export default function LiveResult<C extends LiveConfig, S>({ spec }: { spec: Li
                 <RoundPath path={path} side={String(l.tags?.side)} tick={entryTick} />
                 <span className={l.correct ? 'muted' : ''}>
                   {l.given}
-                  {typeof l.points === 'number' && l.tags?.side !== 'pass' ? ` (${l.points > 0 ? '+' : ''}${l.points})` : l.tags?.missed ? ` (missed ${l.tags?.missedEdge})` : ''}
+                  {typeof l.points === 'number' && l.tags?.side !== 'pass'
+                    ? ` (${l.points > 0 ? '+' : ''}${l.points})`
+                    : l.tags?.missed
+                      ? ` (missed ${l.tags?.missedEdge})`
+                      : ''}
                 </span>
               </li>
             )

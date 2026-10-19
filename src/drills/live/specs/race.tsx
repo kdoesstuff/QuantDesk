@@ -66,16 +66,43 @@ function Settings({ cfg, setCfg }: { cfg: RaceConfig; setCfg: (f: (c: RaceConfig
         <Seg options={[6, 10, 15] as const} value={cfg.length} onChange={(l) => setCfg((c) => ({ ...c, length: l }))} label="Length" />
       </Setting>
       <Setting title="A's step chance" note="The chance each step goes to A rather than B. Shown during the race.">
-        <Seg options={[0.5, 0.55, 0.6] as const} value={cfg.pA} onChange={(p) => setCfg((c) => ({ ...c, pA: p }))} label="Step chance" format={(p) => `${Math.round(p * 100)}%`} />
+        <Seg
+          options={[0.5, 0.55, 0.6] as const}
+          value={cfg.pA}
+          onChange={(p) => setCfg((c) => ({ ...c, pA: p }))}
+          label="Step chance"
+          format={(p) => `${Math.round(p * 100)}%`}
+        />
       </Setting>
-      <Setting title="Market" note="Lagging markets move toward fair slowly. Jumpy markets overshoot it. Mixed picks one each round, and sometimes the market is simply right.">
-        <Seg options={['lag', 'jumpy', 'mixed'] as const} value={cfg.bot} onChange={(b) => setCfg((c) => ({ ...c, bot: b }))} label="Market" format={(b) => (b === 'lag' ? 'Lagging' : b === 'jumpy' ? 'Jumpy' : 'Mixed')} />
+      <Setting
+        title="Market"
+        note="Lagging markets move toward fair slowly. Jumpy markets overshoot it. Mixed picks one each round, and sometimes the market is simply right."
+      >
+        <Seg
+          options={['lag', 'jumpy', 'mixed'] as const}
+          value={cfg.bot}
+          onChange={(b) => setCfg((c) => ({ ...c, bot: b }))}
+          label="Market"
+          format={(b) => (b === 'lag' ? 'Lagging' : b === 'jumpy' ? 'Jumpy' : 'Mixed')}
+        />
       </Setting>
       <Setting title="Speed">
-        <Seg options={[700, 450, 300] as const} value={cfg.tickMs} onChange={(t) => setCfg((c) => ({ ...c, tickMs: t }))} label="Speed" format={(t) => (t === 700 ? 'Slow' : t === 450 ? 'Medium' : 'Fast')} />
+        <Seg
+          options={[700, 450, 300] as const}
+          value={cfg.tickMs}
+          onChange={(t) => setCfg((c) => ({ ...c, tickMs: t }))}
+          label="Speed"
+          format={(t) => (t === 700 ? 'Slow' : t === 450 ? 'Medium' : 'Fast')}
+        />
       </Setting>
       <Setting title="Spread">
-        <Seg options={[1, 2, 3] as const} value={cfg.half} onChange={(h) => setCfg((c) => ({ ...c, half: h }))} label="Spread" format={(h) => `${h * 2}c wide`} />
+        <Seg
+          options={[1, 2, 3] as const}
+          value={cfg.half}
+          onChange={(h) => setCfg((c) => ({ ...c, half: h }))}
+          label="Spread"
+          format={(h) => `${h * 2}c wide`}
+        />
       </Setting>
     </>
   )
@@ -84,7 +111,8 @@ function Settings({ cfg, setCfg }: { cfg: RaceConfig; setCfg: (f: (c: RaceConfig
 export const raceSpec: LiveSpec<RaceConfig, RaceState> = {
   id: 'race',
   title: 'The race',
-  blurb: 'Two runners, one step at a time. A contract pays 100 if A finishes first. The market quotes it live and is sometimes slow, sometimes jumpy. Trade the gap.',
+  blurb:
+    'Two runners, one step at a time. A contract pays 100 if A finishes first. The market quotes it live and is sometimes slow, sometimes jumpy. Trade the gap.',
   defaults: { rounds: 10, tickMs: 450, bot: 'mixed', half: 2, length: 10, pA: 0.5 },
   configKey: (c) => `race:r${c.rounds}:n${c.length}:p${c.pA}:${c.bot}:t${c.tickMs}:s${c.half}`,
   describe: (c) => `${c.rounds} races to ${c.length}, A ${Math.round(c.pA * 100)}% a step, ${c.bot} market`,
@@ -97,11 +125,44 @@ export const raceSpec: LiveSpec<RaceConfig, RaceState> = {
     outcome: (s, cfg) => (s.a >= cfg.length ? 1 : 0),
     describe: (s) => `A ${s.a}, B ${s.b}`,
     contract: (cfg) => `Pays 100 if A reaches ${cfg.length} first. Each step goes to A with ${Math.round(cfg.pA * 100)}% chance.`,
+    explain: (s, cfg) => {
+      const i = cfg.length - s.a
+      const j = cfg.length - s.b
+      const p = pWin(i, j, cfg.pA)
+      const q = cfg.pA
+      return `A needs ${i} more ${i === 1 ? 'step' : 'steps'}, B needs ${j}. A wins if A collects ${i} steps before B collects ${j}: with each step going to A with chance ${Math.round(q * 100)}%, P = Σ over the number of B steps k from 0 to ${j - 1} of C(${i} − 1 + k, k) × ${q}^${i} × ${Math.round((1 - q) * 100) / 100}^k = ${Math.round(p * 100)}%. A quicker check: of the next ${i + j - 1} steps, A needs at least ${i}.`
+    },
     View,
   },
   breakdowns: [
-    { title: 'By market', key: (e) => (e.tags?.bot === 'lag' ? 'Lagging' : e.tags?.bot === 'jumpy' ? 'Jumpy' : 'Efficient'), order: ['Lagging', 'Jumpy', 'Efficient'] },
-    { title: 'By what you did', key: (e) => (e.tags?.side === 'buy' ? 'Bought' : e.tags?.side === 'sell' ? 'Sold' : e.tags?.missed ? 'Passed, edge on offer' : 'Passed, nothing there'), order: ['Bought', 'Sold', 'Passed, edge on offer', 'Passed, nothing there'] },
-    { title: 'By when you entered', key: (e) => (e.tags?.entry === 'none' ? null : e.tags?.entry === 'early' ? 'Early in the race' : e.tags?.entry === 'middle' ? 'Mid race' : 'Late in the race'), order: ['Early in the race', 'Mid race', 'Late in the race'] },
+    {
+      title: 'By market',
+      key: (e) => (e.tags?.bot === 'lag' ? 'Lagging' : e.tags?.bot === 'jumpy' ? 'Jumpy' : 'Efficient'),
+      order: ['Lagging', 'Jumpy', 'Efficient'],
+    },
+    {
+      title: 'By what you did',
+      key: (e) =>
+        e.tags?.side === 'buy'
+          ? 'Bought'
+          : e.tags?.side === 'sell'
+            ? 'Sold'
+            : e.tags?.missed
+              ? 'Passed, edge on offer'
+              : 'Passed, nothing there',
+      order: ['Bought', 'Sold', 'Passed, edge on offer', 'Passed, nothing there'],
+    },
+    {
+      title: 'By when you entered',
+      key: (e) =>
+        e.tags?.entry === 'none'
+          ? null
+          : e.tags?.entry === 'early'
+            ? 'Early in the race'
+            : e.tags?.entry === 'middle'
+              ? 'Mid race'
+              : 'Late in the race',
+      order: ['Early in the race', 'Mid race', 'Late in the race'],
+    },
   ],
 }

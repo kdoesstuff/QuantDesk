@@ -12,8 +12,9 @@ export const HOW_TO: Record<DrillId, string[]> = {
     'Score is the number right before the clock stops. Esc stops early.',
   ],
   'eighty-in-eight': [
-    'Eighty questions, eight minutes, four options each. Press 1, 2, 3 or 4 to answer.',
-    'Right is plus one, wrong is minus one, a skip is free. Press Enter to skip. Knowing when not to answer is half the test.',
+    'Eighty questions, eight minutes. By default you type the answer: one try, Enter submits, Enter on an empty field skips for free.',
+    'Switch Answers to four options in the settings for the format of the real test: keys 1 to 4 answer, Enter skips.',
+    'Right is plus one, wrong is minus one, a skip is free. Knowing when not to answer is half the test.',
     'Questions mix arithmetic, decimals, fractions, percentages, squares, roots and order of operations.',
     'The run ends at eighty questions or when the clock stops, whichever comes first.',
   ],
@@ -130,5 +131,25 @@ export const HOW_TO: Record<DrillId, string[]> = {
     'Prices must obey probability. A and B cannot cost more than A alone. A or B must equal A plus B minus A and B. A plus not A must be 100.',
     'One price breaks a rule, or none does. Pick the trade that locks in a profit whatever happens, or No arbitrage. Keys 1 to 4.',
     'Right is plus one, wrong is minus one if the penalty is on. Enter skips for free.',
+  ],
+  tricks: [
+    'Each problem is built for one shortcut: a two-digit square, a product near 100, two numbers either side of a round one, times 11, a subtraction from a round number, an awkward percentage.',
+    'Type the number only. A right answer clears itself; a wrong one shakes and counts as a slip.',
+    'The review on the result page names the trick for every slip and shows the working with your numbers.',
+    'Use the family chips to drill one trick at a time until it is automatic.',
+  ],
+  'dice-games': [
+    'A dice game is described in a sentence, for example roll two dice and get paid the higher one, or roll until a six and get paid the total. The market is on the expected payout.',
+    'Work out fair exactly. Every game has a clean answer: count outcomes, use linearity of expectation, or work backwards for the re-roll games.',
+    'Take mode: a bid and an ask are shown. Press B to buy at the ask, S to sell at the bid, P to pass. The right call is the side with positive expected edge; pass when fair sits inside the quote.',
+    'Make mode: type your bid, Tab, your ask, Enter. If fair sits outside your quote the house trades against you. A quote wider than the limit gets no trade. Fair inside and the quote tight scores best.',
+    'After each round the game is played once so you see what came in, but the score is expected edge: the single play is noise.',
+  ],
+  'stop-or-roll': [
+    'You roll a die (or draw a card from a 13-card deck) up to a set number of times. After each one you may stop and keep that value, or go on. The last one is forced.',
+    'S or Enter stops. R or Space goes on. On a phone, tap the buttons.',
+    'The right rule: go on when what is left is worth more than what you hold. With one roll left that is 3.5 for a six-sided die, so keep a 4 or more. With more rolls left the bar rises. With cards the bar moves as high cards leave the deck.',
+    'Every decision is scored against the optimal rule: stopping below the bar or rolling past it costs the difference in expectation. The score is the share of the optimal expected value your decisions kept, 100 is perfect.',
+    'The result page shows your thresholds by draws left against the optimal ones, and reviews each decision that gave value away.',
   ],
 }

@@ -21,6 +21,7 @@ export default function SpeedArithmeticRun() {
   const logs = useRef<AnswerLog[]>([])
   const shownAt = useRef(0)
   const misses = useRef(0)
+  const tried = useRef<number | undefined>(undefined)
   const endAt = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const problemRef = useRef(problem)
@@ -52,6 +53,7 @@ export default function SpeedArithmeticRun() {
       ms: performance.now() - shownAt.current,
       misses: misses.current,
       correct: false,
+      tried: tried.current === undefined ? undefined : String(tried.current),
     })
     const answered = logs.current.filter((l) => l.given !== null)
     const attempt: Attempt<SpeedArithmeticConfig> = {
@@ -117,14 +119,17 @@ export default function SpeedArithmeticRun() {
         ms: now - shownAt.current,
         misses: misses.current,
         correct: true,
+        tried: misses.current > 0 && tried.current !== undefined ? String(tried.current) : undefined,
       })
       setScore((s) => s + 1)
       misses.current = 0
+      tried.current = undefined
       shownAt.current = now
       setValue('')
       setProblem((p) => nextProblem(cfg, p))
     } else if (v.length >= String(problem.answer).length) {
       // Wrong and already as long as the answer: count a miss, clear, shake.
+      if (misses.current === 0) tried.current = n
       misses.current += 1
       setShake(true)
       setTimeout(() => setShake(false), 260)

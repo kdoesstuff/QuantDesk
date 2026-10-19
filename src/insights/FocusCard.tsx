@@ -194,4 +194,11 @@ const EVENTS_PER_RUN: Partial<Record<DrillId, number>> = {
   'task-switch': 96,
   intercept: 20,
   balloon: 30,
+  tricks: 30,
+  'dice-games': 20,
+  'stop-or-roll': 60,
+  'dutch-book': 25,
+  race: 10,
+  evidence: 10,
+  'event-maker': 30,
 }

@@ -3,6 +3,7 @@ import { median } from 'd3'
 import { CategoryTable, Missing, ResultFrame, useAttempt } from '../shared/Frames'
 import PaceChart from '../shared/PaceChart'
 import InsightsPanel from '../../insights/InsightsPanel'
+import Review from '../shared/Review'
 import { breakdownRows } from '../typed/Result'
 import type { RoundsSpec, Scenario } from './spec'
 
@@ -37,7 +38,11 @@ export default function RoundsResult<C extends object, S extends Scenario, D>({ 
         <section className="result__section">
           <h2>Pace</h2>
           <p className="muted">Seconds per decision, in order. Blue is a right call, red a wrong one.</p>
-          <PaceChart ms={decided.map((l) => l.ms)} colours={decided.map((l) => (l.correct ? 'var(--blue-2)' : 'var(--wrong)'))} label="Seconds per decision" />
+          <PaceChart
+            ms={decided.map((l) => l.ms)}
+            colours={decided.map((l) => (l.correct ? 'var(--blue-2)' : 'var(--wrong)'))}
+            label="Seconds per decision"
+          />
         </section>
       )}
 
@@ -51,6 +56,8 @@ export default function RoundsResult<C extends object, S extends Scenario, D>({ 
           </section>
         )
       })}
+
+      <Review events={attempt.answers} title="Review" intro="Rounds that went wrong, with the approach." />
 
       <section className="result__section">
         <h2>Round by round</h2>

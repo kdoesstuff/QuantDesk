@@ -21,6 +21,8 @@ export interface Outcome {
   answer: string
   /** One line of feedback shown between rounds. */
   note: string
+  /** The approach in full, for the review of rounds that went wrong. */
+  how?: string
   /** Extra facts for the analysis. */
   tags?: Record<string, TagValue>
 }
