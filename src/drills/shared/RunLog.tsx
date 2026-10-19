@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { scaleLinear, scalePoint, line as d3line, curveMonotoneX, timeFormat } from 'd3'
 import type { Attempt, DrillId } from '../../lib/types'
 import { store } from '../../lib/storage'
+import { readString, writeString } from '../../lib/persist'
 import { drillMeta } from '../registry'
 
 const SIZES = [10, 15, 20, 25] as const
@@ -14,7 +15,17 @@ function fmtScore(x: number, unit?: string) {
 }
 
 /** The last N runs plotted oldest to newest. Runs with the current settings are yellow, others blue. */
-function LogChart({ runs, currentKey, unit, higherIsBetter }: { runs: Attempt[]; currentKey: string; unit?: string; higherIsBetter: boolean }) {
+function LogChart({
+  runs,
+  currentKey,
+  unit,
+  higherIsBetter,
+}: {
+  runs: Attempt[]
+  currentKey: string
+  unit?: string
+  higherIsBetter: boolean
+}) {
   const W = 680
   const H = 200
   const padL = 40
@@ -28,7 +39,10 @@ function LogChart({ runs, currentKey, unit, higherIsBetter }: { runs: Attempt[];
   const scores = pts.map((p) => p.score)
   const lo = Math.min(0, ...scores)
   const hi = Math.max(1, ...scores)
-  const y = scaleLinear().domain([lo, hi]).range([H - padB, padT]).nice()
+  const y = scaleLinear()
+    .domain([lo, hi])
+    .range([H - padB, padT])
+    .nice()
   const path = d3line<Attempt>()
     .x((_, i) => x(i)!)
     .y((p) => y(p.score))
@@ -48,7 +62,14 @@ function LogChart({ runs, currentKey, unit, higherIsBetter }: { runs: Attempt[];
       ))}
       {pts.map((p, i) =>
         i % every === 0 || i === pts.length - 1 ? (
-          <text key={p.id} x={x(i)} y={H - 8} textAnchor={i === pts.length - 1 ? 'end' : i === 0 ? 'start' : 'middle'} fontSize="11" fill="var(--ink-3)">
+          <text
+            key={p.id}
+            x={x(i)}
+            y={H - 8}
+            textAnchor={i === pts.length - 1 ? 'end' : i === 0 ? 'start' : 'middle'}
+            fontSize="11"
+            fill="var(--ink-3)"
+          >
             {fmtDay(new Date(p.ts))}
           </text>
         ) : null,
@@ -84,12 +105,8 @@ export default function RunLog({ drill, currentKey }: { drill: DrillId; currentK
     }
   })
   const [size, setSize] = useState<(typeof SIZES)[number]>(() => {
-    try {
-      const v = Number(localStorage.getItem('qd.log.size'))
-      return (SIZES as readonly number[]).includes(v) ? (v as (typeof SIZES)[number]) : 15
-    } catch {
-      return 15
-    }
+    const v = Number(readString('qd.log.size'))
+    return (SIZES as readonly number[]).includes(v) ? (v as (typeof SIZES)[number]) : 15
   })
 
   useEffect(() => {
@@ -98,10 +115,10 @@ export default function RunLog({ drill, currentKey }: { drill: DrillId; currentK
   useEffect(() => {
     try {
       sessionStorage.setItem(`qd.log.${drill}`, open ? '1' : '0')
-      localStorage.setItem('qd.log.size', String(size))
     } catch {
       /* ignore */
     }
+    writeString('qd.log.size', String(size))
   }, [open, size, drill])
 
   const runs = useMemo(() => (all ?? []).slice(0, size), [all, size])
@@ -130,7 +147,8 @@ export default function RunLog({ drill, currentKey }: { drill: DrillId; currentK
         <div className="runlog__body">
           {runs.length > 1 && <LogChart runs={runs} currentKey={currentKey} unit={meta.unit} higherIsBetter={higher} />}
           <p className="faint">
-            Last {runs.length} of {all.length}. Yellow points are runs with the current settings, blue are other settings. The ringed point is the best of these.
+            Last {runs.length} of {all.length}. Yellow points are runs with the current settings, blue are other settings. The ringed point
+            is the best of these.
           </p>
           <table className="optable tnum runlog__table">
             <thead>

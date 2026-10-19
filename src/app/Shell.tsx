@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Lenis from 'lenis'
 import { sections } from './sections'
 import { useTheme } from '../lib/theme'
@@ -44,11 +44,17 @@ function useSpotlight() {
   }, [])
 }
 
-/** Smooth scrolling for the whole page. Respects reduced motion. */
-function useSmoothScroll(pathname: string) {
+/**
+ * Smooth scrolling for the page on devices with a wheel. Phones keep native
+ * scrolling, which is already smooth and plays better with the keyboard
+ * and the address bar. Respects reduced motion. Nested scroll areas (the
+ * sidebar) opt out with data-lenis-prevent.
+ */
+function useSmoothScroll(pathname: string, paused: boolean) {
   const lenis = useRef<Lenis | null>(null)
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!matchMedia('(pointer: fine)').matches) return
     const l = new Lenis({ autoRaf: true, lerp: 0.11, wheelMultiplier: 1 })
     lenis.current = l
     return () => {
@@ -60,6 +66,42 @@ function useSmoothScroll(pathname: string) {
     if (lenis.current) lenis.current.scrollTo(0, { immediate: true })
     else window.scrollTo(0, 0)
   }, [pathname])
+  useEffect(() => {
+    const l = lenis.current
+    if (!l) return
+    if (paused) l.stop()
+    else l.start()
+  }, [paused])
+}
+
+/** While the drawer is open the page behind it must not scroll, and Escape closes it. */
+function useDrawer(open: boolean, close: () => void) {
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [open, close])
+}
+
+/** Tracks a media query, so the drawer knows whether it is a drawer right now. */
+function useMedia(query: string) {
+  const [match, setMatch] = useState(() => typeof matchMedia === 'function' && matchMedia(query).matches)
+  useEffect(() => {
+    const m = matchMedia(query)
+    const on = () => setMatch(m.matches)
+    on()
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [query])
+  return match
 }
 
 export default function Shell() {
@@ -68,8 +110,11 @@ export default function Shell() {
   const loc = useLocation()
   const focus = loc.pathname.endsWith('/run')
 
+  const narrow = useMedia('(max-width: 860px)')
+  const close = useCallback(() => setOpen(false), [])
   useSpotlight()
-  useSmoothScroll(loc.pathname)
+  useSmoothScroll(loc.pathname, open && narrow)
+  useDrawer(open, close)
   useEffect(() => setOpen(false), [loc.pathname])
 
   return (
@@ -78,9 +123,10 @@ export default function Shell() {
 
       <header className="topbar">
         <button
-          className="topbar__menu"
+          className={'topbar__menu' + (open ? ' is-open' : '')}
           aria-label={open ? 'Close menu' : 'Open menu'}
           aria-expanded={open}
+          aria-controls="rail"
           onClick={() => setOpen((o) => !o)}
         >
           <span />
@@ -92,13 +138,20 @@ export default function Shell() {
         </NavLink>
       </header>
 
-      <aside className={'rail no-scrollbar' + (open ? ' rail--open' : '')}>
+      <aside id="rail" className={'rail no-scrollbar' + (open ? ' rail--open' : '')} data-lenis-prevent inert={narrow && !open}>
         <div className="rail__head">
           <NavLink to="/" className="brand rail__brand">
             <Mark />
             <span>Quant Desk</span>
           </NavLink>
-          <ThemePicker value={theme} onChange={setTheme} />
+          <div className="rail__tools">
+            <ThemePicker value={theme} onChange={setTheme} />
+            <button className="rail__close" aria-label="Close menu" onClick={close}>
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path d="M4 4l10 10M14 4L4 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <nav className="rail__nav" aria-label="Sections">
@@ -128,7 +181,7 @@ export default function Shell() {
         </nav>
       </aside>
 
-      {open && <button className="scrim" aria-label="Close menu" onClick={() => setOpen(false)} />}
+      <button className={'scrim' + (open ? ' is-open' : '')} aria-label="Close menu" tabIndex={open ? 0 : -1} onClick={close} />
 
       <main className="content">
         <Outlet />

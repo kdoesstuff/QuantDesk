@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { scaleLinear, scaleTime, line as d3line, curveMonotoneX, extent, timeFormat } from 'd3'
-import { store } from '../lib/storage'
+import { store, clearEverything } from '../lib/storage'
 import type { Attempt } from '../lib/types'
 import { drillMeta } from '../drills/registry'
 import { analyze, type Finding } from '../insights/analyze'
@@ -56,7 +56,13 @@ function ActivityCalendar({ attempts }: { attempts: Attempt[] }) {
   }
 
   return (
-    <svg viewBox={`0 -18 ${W} ${H + 18}`} width="100%" style={{ maxWidth: W * 1.6 }} role="img" aria-label="Sessions per day, last sixteen weeks">
+    <svg
+      viewBox={`0 -18 ${W} ${H + 18}`}
+      width="100%"
+      style={{ maxWidth: W * 1.6 }}
+      role="img"
+      aria-label="Sessions per day, last sixteen weeks"
+    >
       {months.map((m) => (
         <text key={m.label + m.x} x={m.x} y={-6} fontSize="10" fill="var(--ink-3)">
           {m.label}
@@ -210,6 +216,7 @@ export default function Progress() {
 
   const clear = async () => {
     await store.clearAll()
+    clearEverything()
     setAttempts([])
     setConfirmClear(false)
   }
@@ -220,8 +227,7 @@ export default function Progress() {
         <h1 className="display progress__title">Progress</h1>
         <p className="muted">
           {attempts.length} {attempts.length === 1 ? 'run' : 'runs'} on {days} {days === 1 ? 'day' : 'days'},{' '}
-          {totalProblems.toLocaleString()} right answers, about {minutes} {minutes === 1 ? 'minute' : 'minutes'} on
-          the clock.
+          {totalProblems.toLocaleString()} right answers, about {minutes} {minutes === 1 ? 'minute' : 'minutes'} on the clock.
         </p>
       </header>
 
@@ -239,7 +245,10 @@ export default function Progress() {
                     <span className="worklist__headline">{b.label}</span>
                     <span className="muted tnum">
                       {b.runIds.length} {b.runIds.length === 1 ? 'run' : 'runs'}
-                      {p.current !== null ? `, last three ${isSpeed ? secs(p.current) : pct(p.current)} against a target of ${isSpeed ? secs(b.target.medMs!) : pct(b.target.acc!)}` : ''}.
+                      {p.current !== null
+                        ? `, last three ${isSpeed ? secs(p.current) : pct(p.current)} against a target of ${isSpeed ? secs(b.target.medMs!) : pct(b.target.acc!)}`
+                        : ''}
+                      .
                     </span>
                     <Link to={`/drill/${b.drill}`}>Open</Link>
                   </li>
@@ -326,9 +335,12 @@ export default function Progress() {
       </section>
 
       <section className="progress__section progress__danger">
+        <p className="faint">
+          Everything here lives in this browser only. Nothing is sent anywhere, and clearing your browser data clears it too.
+        </p>
         {confirmClear ? (
           <div className="progress__confirm">
-            <span>Delete every logged run on this device?</span>
+            <span>Delete every run, setting and focus block saved in this browser?</span>
             <button className="btn btn-quiet" onClick={clear}>
               Delete all
             </button>

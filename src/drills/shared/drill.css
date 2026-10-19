@@ -109,7 +109,13 @@
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  max-width: 100%;
   background: var(--ground);
+}
+.run > * {
+  min-width: 0;
 }
 .run__clock {
   height: 5px;
@@ -213,11 +219,30 @@
 .run__input:focus {
   outline: none;
 }
+.run__stop {
+  font-size: var(--t-0);
+  color: var(--ink-3);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ground-3);
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.run__stop:hover {
+  color: var(--ink);
+  border-color: var(--ground-4);
+}
 .run__hint {
   text-align: center;
   padding: var(--s-5);
   font-size: var(--t-0);
   max-width: none;
+}
+/* Key hints mean nothing on a phone; the buttons do the same job there. */
+@media (pointer: coarse) and (max-width: 860px) {
+  .key-hint,
+  .run__hint {
+    display: none;
+  }
 }
 
 /* Result --------------------------------------------------------------------- */
@@ -324,6 +349,26 @@
   .run__meta {
     padding: var(--s-3) var(--s-4);
   }
+  /* Phones: prompts wrap instead of widening the page, and the answer box
+     takes most of the width so it is easy to tap. */
+  .run {
+    overflow-x: clip;
+  }
+  .run__center {
+    padding-left: var(--s-4);
+    padding-right: var(--s-4);
+  }
+  .run__problem,
+  .run__problem--long {
+    white-space: normal;
+    text-align: center;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+    font-size: clamp(2.4rem, 11vw, 5rem);
+  }
+  .run__input {
+    width: min(64vw, 340px);
+  }
 }
 
 /* Additions for the typed and choice engines ------------------------------- */
@@ -416,13 +461,6 @@
   color: var(--ink-3);
   font-stretch: 100%;
   letter-spacing: 0;
-}
-
-@media (max-width: 600px) {
-  .choices {
-    grid-template-columns: 1fr;
-    max-width: 360px;
-  }
 }
 
 /* Rounds engine ------------------------------------------------------------ */
@@ -1153,4 +1191,35 @@
 }
 .maker__tape li.is-none {
   color: var(--ink-3);
+}
+
+/* Phones: choices stack and wrap. Kept last so it wins over the engine-specific rules above. */
+@media (max-width: 600px) {
+  .choices {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+  .choice,
+  .choices--text .choice,
+  .choices--row .choice {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: left;
+    font-size: clamp(1.05rem, 4.2vw, 1.5rem);
+    padding: var(--s-3) var(--s-4);
+  }
+  .run__detail {
+    max-width: 100%;
+    gap: var(--s-2) var(--s-5);
+    padding: var(--s-3) var(--s-4);
+  }
+  .choice__key {
+    flex: none;
+  }
+  .choice > span:last-child {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
 }

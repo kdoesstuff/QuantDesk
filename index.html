@@ -2,30 +2,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="color-scheme" content="dark light" />
     <meta name="theme-color" content="#0e1117" />
+    <meta
+      name="description"
+      content="Free quant trader interview practice: speed maths, market making, prediction markets, estimation and cognitive drills, with analysis of your weak spots."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Quant Desk" />
+    <meta property="og:description" content="Quote fast. Quote right. Free practice for quant trading interviews." />
+    <meta property="og:type" content="website" />
     <title>Quant Desk</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e1117'/%3E%3Ccircle cx='11' cy='11' r='3.2' fill='%23faed26'/%3E%3Ccircle cx='21' cy='21' r='3.2' fill='%23faed26'/%3E%3Ccircle cx='21' cy='11' r='3.2' fill='%232b4dff'/%3E%3Ccircle cx='11' cy='21' r='3.2' fill='%232b4dff'/%3E%3C/svg%3E" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap"
       rel="stylesheet"
     />
-    <script>
-      // Apply the saved theme before first paint. "ink" is the default.
-      try {
-        var t = localStorage.getItem('qd.theme');
-        var ok = ['ink', 'periwinkle', 'blush', 'charcoal', 'plum', 'sky'];
-        document.documentElement.dataset.theme = ok.indexOf(t) >= 0 ? t : 'ink';
-      } catch (e) {
-        document.documentElement.dataset.theme = 'ink';
-      }
-    </script>
+    <script src="./theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>Quant Desk needs JavaScript to run the drills.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

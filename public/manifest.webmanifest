@@ -1,0 +1,15 @@
+{
+  "name": "Quant Desk",
+  "short_name": "Quant Desk",
+  "description": "Free quant trader interview practice: speed maths, market making, prediction markets, estimation and cognitive drills, with analysis of your weak spots.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#0e1117",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

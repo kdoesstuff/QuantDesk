@@ -79,3 +79,13 @@ Done.
   - The race and Evidence stream run on a new live engine (`src/drills/live/`): a process ticks, the exact probability is known at every tick, a bot market tracks it with a lag or overshoots it, the player takes one position a round held to resolution, score is expected edge at entry. The whole price path is logged per round and drawn on the result page.
   - Event market maker (`cognitive/eventMaker.tsx`): Glosten and Milgrom by hand. Informed traders know the outcome, noise traders have a private value so wide quotes trade less. Score is the expected profit of each quote against the engine's posterior; the best possible quote is found by grid search and the shortfall is logged.
 - The Problems group is gone; the question bank idea is replaced by richer question families inside the market games, to be fed by the PDFs.
+
+## Hardening pass
+
+- Crash fix: switching between two games on the same engine through the sidebar reused the page component and its settings state, so the new game read a field that did not exist (`types.includes` on Percentages after Fractions). Every drill route now carries a `key`, and saved settings are checked field by field against the drill's defaults before use (`sanitiseConfig`).
+- Error page (`src/pages/ErrorPage.tsx`) on every route: try again, reset this game's settings, home. Unknown links get a not-found page.
+- Storage: `src/lib/persist.ts` is the only file that touches localStorage; it never throws and falls back to memory. Stored runs are validated, malformed events dropped, history capped at 4,000 runs, and a full quota trims the oldest runs until the write fits. Another tab's writes invalidate the cache. "Clear all data" on Progress wipes runs, settings and focus blocks (theme stays).
+- Sidebar: `data-lenis-prevent` so the wheel scrolls the list, not the page. Phone drawer: slides in with a scrim, close button, Escape, scroll lock, `inert` when closed, closes on navigation. Smooth scrolling is desktop only.
+- Phones: run screens have a Stop button; prompts and choice buttons wrap; the run grid can no longer widen the page; key hints hidden on touch screens; Bests table spacing.
+- Production page: content security policy injected at build time, referrer policy, description and social tags, manifest and icons for install to home screen, `robots.txt`, theme bootstrap moved out of inline script. Three.js is loaded lazily on the home page only; D3 and Three are their own chunks.
+- Checks: `npm run check` (typecheck, lint, `scripts/check-storage.mjs`), run by the deploy workflow before building. `npm run smoke` opens every page at 1440 and 390 and reports errors and overflow.

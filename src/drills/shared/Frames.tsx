@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import type { Attempt, DrillId } from '../../lib/types'
 import { store } from '../../lib/storage'
 import Sparkline from '../../components/Sparkline'
@@ -95,7 +95,7 @@ export function ConfigFrame({
             <button className="btn btn-primary" onClick={onStart} disabled={!valid}>
               {startLabel}
             </button>
-            <span className="faint">Enter</span>
+            <span className="faint key-hint">Enter</span>
           </div>
         </section>
         {aside}
@@ -209,6 +209,17 @@ export function Range({
 
 /* Run ---------------------------------------------------------------------- */
 
+/** Back to the settings page. Esc does the same on a keyboard; this is for phones. */
+function StopButton() {
+  const loc = useLocation()
+  const to = loc.pathname.replace(/\/run\/?$/, '') || '/'
+  return (
+    <Link to={to} className="run__stop" aria-label="Stop and go back to settings">
+      Stop
+    </Link>
+  )
+}
+
 export function RunFrame({
   pct,
   left,
@@ -235,6 +246,7 @@ export function RunFrame({
       </div>
       <div className="run__meta">
         <span className="tnum run__time">{left}</span>
+        <StopButton />
         <span className="tnum run__score">{right}</span>
       </div>
       {countdown !== null && countdown !== undefined ? (
@@ -315,7 +327,7 @@ export function ResultFrame({
         <button className="btn btn-primary" onClick={again}>
           Again
         </button>
-        <span className="faint">Enter</span>
+        <span className="faint key-hint">Enter</span>
         <Link to={`/drill/${drill}`} className="btn btn-ghost">
           Change settings
         </Link>

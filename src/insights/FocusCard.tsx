@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Attempt, DrillId } from '../lib/types'
 import { store } from '../lib/storage'
-import { loadDrillConfig } from '../lib/config'
+import { readRawDrillConfig } from '../lib/config'
 import { analyze, INSIGHTS_AFTER, type Finding } from './analyze'
 import { activeFocus, listFocus, matchesPatch, progress, startFocus, stopFocus, type FocusBlock, type FocusProgress } from './focus'
 import { recommend } from './recommend'
@@ -26,7 +26,7 @@ export default function FocusCard({ drill, onApply }: { drill: DrillId; onApply:
   // Re-check whether the stored settings honour the block whenever it changes.
   useEffect(() => {
     if (!block) return
-    const check = () => setCfgMatches(matchesPatch(loadDrillConfig(drill, {}), block.patch))
+    const check = () => setCfgMatches(matchesPatch(readRawDrillConfig(drill), block.patch))
     check()
     const t = setInterval(check, 800)
     return () => clearInterval(t)
@@ -38,7 +38,13 @@ export default function FocusCard({ drill, onApply }: { drill: DrillId; onApply:
     const a = analyze(drill, history)
     return a.findings.find((f) => f.focusable && recommend(f)?.patch) ?? null
   }, [history, drill, block])
-  const cleared = useMemo(() => listFocus().filter((b) => b.drill === drill && b.status === 'cleared' && (b.clearedAt ?? 0) > Date.now() - 48 * 3600 * 1000).slice(-1)[0], [drill, tick])
+  const cleared = useMemo(
+    () =>
+      listFocus()
+        .filter((b) => b.drill === drill && b.status === 'cleared' && (b.clearedAt ?? 0) > Date.now() - 48 * 3600 * 1000)
+        .slice(-1)[0],
+    [drill, tick],
+  )
 
   if (!history) return null
 
@@ -56,11 +62,19 @@ export default function FocusCard({ drill, onApply }: { drill: DrillId; onApply:
         <p className="focus-card__label">{block.label}</p>
         <p className="muted">{block.advice}</p>
         <p className="muted tnum">
-          {block.baseline.medMs !== undefined && isSpeed ? `Baseline ${secs(block.baseline.medMs)}, target ${secs(block.target.medMs!)}.` : block.baseline.acc !== undefined ? `Baseline ${pct(block.baseline.acc)}, target ${pct(block.target.acc!)}.` : ''}
+          {block.baseline.medMs !== undefined && isSpeed
+            ? `Baseline ${secs(block.baseline.medMs)}, target ${secs(block.target.medMs!)}.`
+            : block.baseline.acc !== undefined
+              ? `Baseline ${pct(block.baseline.acc)}, target ${pct(block.target.acc!)}.`
+              : ''}
         </p>
         <p className="muted tnum">
           {block.runIds.length} {block.runIds.length === 1 ? 'run' : 'runs'} so far.{' '}
-          {prog.current !== null ? `Last three: ${fmt(prog.current)}.` : block.runIds.length < 3 ? `${3 - block.runIds.length} more before the target is checked.` : 'Not enough problems in the window yet.'}
+          {prog.current !== null
+            ? `Last three: ${fmt(prog.current)}.`
+            : block.runIds.length < 3
+              ? `${3 - block.runIds.length} more before the target is checked.`
+              : 'Not enough problems in the window yet.'}
         </p>
         {!cfgMatches && <p className="focus-card__warn">Settings differ from the block, so runs will not count.</p>}
         <div className="focus-card__actions">
@@ -96,7 +110,7 @@ export default function FocusCard({ drill, onApply }: { drill: DrillId; onApply:
           <button
             className="btn btn-yellow btn-small"
             onClick={() => {
-              const b = startFocus(suggestion, loadDrillConfig<Record<string, unknown>>(drill, {}))
+              const b = startFocus(suggestion, readRawDrillConfig(drill))
               if (!b) return
               onApply(b.patch)
               setBlock(b)
@@ -117,9 +131,14 @@ export default function FocusCard({ drill, onApply }: { drill: DrillId; onApply:
         <h3>Cleared</h3>
         <p className="focus-card__label">{cleared.label}</p>
         <p className="muted">
-          {isSpeed && cleared.baseline.medMs ? `From ${secs(cleared.baseline.medMs)} to under ${secs(cleared.target.medMs!)}.` : cleared.baseline.acc !== undefined ? `From ${pct(cleared.baseline.acc)} to over ${pct(cleared.target.acc!)}.` : ''} Back to mixed practice.
+          {isSpeed && cleared.baseline.medMs
+            ? `From ${secs(cleared.baseline.medMs)} to under ${secs(cleared.target.medMs!)}.`
+            : cleared.baseline.acc !== undefined
+              ? `From ${pct(cleared.baseline.acc)} to over ${pct(cleared.target.acc!)}.`
+              : ''}{' '}
+          Back to mixed practice.
         </p>
-        {cleared.prevConfig && !matchesPatch(loadDrillConfig(drill, {}), cleared.prevConfig) && (
+        {cleared.prevConfig && !matchesPatch(readRawDrillConfig(drill), cleared.prevConfig) && (
           <div className="focus-card__actions">
             <button className="btn btn-yellow btn-small" onClick={() => onApply(cleared.prevConfig!)}>
               Restore previous settings
@@ -131,7 +150,7 @@ export default function FocusCard({ drill, onApply }: { drill: DrillId; onApply:
   }
   // Nothing to show yet: say what it takes, in plain numbers.
   const events = history.reduce((n, a) => n + a.answers.filter((l) => l.given !== null).length, 0)
-  const perRun = history.length ? Math.max(1, Math.round(events / history.length)) : EVENTS_PER_RUN[drill] ?? 40
+  const perRun = history.length ? Math.max(1, Math.round(events / history.length)) : (EVENTS_PER_RUN[drill] ?? 40)
   const runsLeft = Math.max(0, Math.ceil((INSIGHTS_AFTER - events) / perRun))
   return (
     <aside className="standing insights-note">
@@ -147,7 +166,8 @@ export default function FocusCard({ drill, onApply }: { drill: DrillId; onApply:
       ) : (
         <>
           <p className="faint">
-            Insights are on: {history.length} runs, {events} problems. No weak spot stands out yet; a focus mode appears here as soon as one does.
+            Insights are on: {history.length} runs, {events} problems. No weak spot stands out yet; a focus mode appears here as soon as one
+            does.
           </p>
         </>
       )}

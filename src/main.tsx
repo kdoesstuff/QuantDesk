@@ -6,6 +6,7 @@ import Shell from './app/Shell'
 import Home from './pages/Home'
 import Progress from './pages/Progress'
 import Method from './pages/Method'
+import ErrorPage from './pages/ErrorPage'
 import SpeedArithmeticConfigPage from './drills/speedArithmetic/Config'
 import SpeedArithmeticRun from './drills/speedArithmetic/Run'
 import SpeedArithmeticResult from './drills/speedArithmetic/Result'
@@ -45,42 +46,46 @@ import { evidenceSpec } from './drills/live/specs/evidence'
 
 function typedRoutes<C extends object>(spec: TypedSpec<C>): RouteObject[] {
   return [
-    { path: `drill/${spec.id}`, element: <TypedConfig spec={spec} /> },
-    { path: `drill/${spec.id}/run`, element: <TypedRun spec={spec} /> },
-    { path: `drill/${spec.id}/result/:id`, element: <TypedResult spec={spec} /> },
+    { path: `drill/${spec.id}`, element: <TypedConfig key={spec.id} spec={spec} /> },
+    { path: `drill/${spec.id}/run`, element: <TypedRun key={spec.id} spec={spec} /> },
+    { path: `drill/${spec.id}/result/:id`, element: <TypedResult key={spec.id} spec={spec} /> },
   ]
 }
 
 function roundsRoutes<C extends object, S extends Scenario, D>(spec: RoundsSpec<C, S, D>): RouteObject[] {
   return [
-    { path: `drill/${spec.id}`, element: <ConfigPage spec={spec} /> },
-    { path: `drill/${spec.id}/run`, element: <RoundsRun spec={spec} /> },
-    { path: `drill/${spec.id}/result/:id`, element: <RoundsResult spec={spec} /> },
+    { path: `drill/${spec.id}`, element: <ConfigPage key={spec.id} spec={spec} /> },
+    { path: `drill/${spec.id}/run`, element: <RoundsRun key={spec.id} spec={spec} /> },
+    { path: `drill/${spec.id}/result/:id`, element: <RoundsResult key={spec.id} spec={spec} /> },
   ]
 }
 
 function cognitiveRoutes<C extends object>(spec: CognitiveSpec<C>): RouteObject[] {
   return [
-    { path: `drill/${spec.id}`, element: <ConfigPage spec={spec} /> },
-    { path: `drill/${spec.id}/run`, element: <CognitiveRun spec={spec} /> },
-    { path: `drill/${spec.id}/result/:id`, element: <CognitiveResult spec={spec} /> },
+    { path: `drill/${spec.id}`, element: <ConfigPage key={spec.id} spec={spec} /> },
+    { path: `drill/${spec.id}/run`, element: <CognitiveRun key={spec.id} spec={spec} /> },
+    { path: `drill/${spec.id}/result/:id`, element: <CognitiveResult key={spec.id} spec={spec} /> },
   ]
 }
 
 function liveRoutes<C extends LiveConfig, S>(spec: LiveSpec<C, S>): RouteObject[] {
   return [
-    { path: `drill/${spec.id}`, element: <ConfigPage spec={spec} /> },
-    { path: `drill/${spec.id}/run`, element: <LiveRun spec={spec} /> },
-    { path: `drill/${spec.id}/result/:id`, element: <LiveResult spec={spec} /> },
+    { path: `drill/${spec.id}`, element: <ConfigPage key={spec.id} spec={spec} /> },
+    { path: `drill/${spec.id}/run`, element: <LiveRun key={spec.id} spec={spec} /> },
+    { path: `drill/${spec.id}/result/:id`, element: <LiveResult key={spec.id} spec={spec} /> },
   ]
 }
 
 // Hash routing so the static build works anywhere without server rewrites.
 // Switch to createBrowserRouter once hosted somewhere with SPA fallback.
+// Each drill element carries a key: the same page component serves many
+// drills, and without a key React would keep one drill's settings state when
+// the sidebar jumps to another.
 const router = createHashRouter([
   {
     path: '/',
     element: <Shell />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
       { path: 'progress', element: <Progress /> },
@@ -108,7 +113,8 @@ const router = createHashRouter([
       ...liveRoutes(raceSpec),
       ...liveRoutes(evidenceSpec),
       ...cognitiveRoutes(eventMakerSpec),
-    ],
+      { path: '*', element: <ErrorPage notFound /> },
+    ].map((r) => ({ ...r, errorElement: <ErrorPage /> })),
   },
 ])
 

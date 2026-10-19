@@ -1,8 +1,11 @@
+import { lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
-import DiceField from '../components/DiceField'
 import GaltonBackdrop from '../components/GaltonBackdrop'
 import { sections } from '../app/sections'
 import './home.css'
+
+// The 3D dice pull in a large library; load them after the page is up, and only here.
+const DiceField = lazy(() => import('../components/DiceField'))
 
 const descriptions: Record<string, string> = {
   '/drill/speed-arithmetic': 'Typed answers against a clock. The Zetamac format, with history.',
@@ -32,7 +35,9 @@ export default function Home() {
   return (
     <div className="home">
       <section className="hero">
-        <DiceField className="hero__field" />
+        <Suspense fallback={<div className="hero__field" aria-hidden="true" />}>
+          <DiceField className="hero__field" />
+        </Suspense>
         <div className="hero__text">
           <h1 className="display hero__title">
             <span data-word="Quote" aria-label="Quote" />

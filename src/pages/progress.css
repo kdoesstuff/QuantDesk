@@ -54,6 +54,22 @@
   padding: var(--s-2) 0;
   border-bottom: 1px solid var(--ground-3);
 }
+.bests th + th,
+.bests td + td {
+  padding-left: var(--s-3);
+}
+@media (max-width: 600px) {
+  .bests {
+    font-size: var(--t-0);
+  }
+  .bests th + th,
+  .bests td + td {
+    padding-left: var(--s-2);
+  }
+  .bests td:nth-child(2) {
+    color: var(--ink-3);
+  }
+}
 .bests td a {
   color: var(--blue-2);
 }

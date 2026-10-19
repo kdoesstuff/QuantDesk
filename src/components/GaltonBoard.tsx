@@ -45,7 +45,7 @@ export default function GaltonBoard({ className }: { className?: string }) {
     const binW = pegGap
     const binX = (i: number) => W / 2 + (i - ROWS / 2) * binW
 
-    const counts = new Array<number>(BINS).fill(0)
+    const counts = Array.from({ length: BINS }, () => 0)
     let total = 0
     const balls: Ball[] = []
     let dropAcc = 0

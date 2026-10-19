@@ -3,6 +3,7 @@ import { featurize } from './features'
 import { median } from './stats'
 import type { Finding } from './analyze'
 import { recommend } from './recommend'
+import { readJSON, writeJSON } from '../lib/persist'
 
 /**
  * Focus blocks. A block pins the settings that isolate a weak category,
@@ -37,21 +38,33 @@ export const MIN_ROWS = 20
 export const SPEED_GAIN = 0.15
 export const ACC_GAIN = 0.08
 
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+
+/** A stored block is kept only when every field the card reads is present and well typed. */
+function validBlock(v: unknown): v is FocusBlock {
+  if (!isObj(v)) return false
+  if (typeof v.id !== 'string' || typeof v.drill !== 'string' || typeof v.dim !== 'string' || typeof v.value !== 'string') return false
+  if (v.kind !== 'slow' && v.kind !== 'inaccurate') return false
+  if (typeof v.label !== 'string' || typeof v.advice !== 'string') return false
+  if (!isObj(v.patch) || !isObj(v.baseline) || !isObj(v.target)) return false
+  if (v.prevConfig !== undefined && !isObj(v.prevConfig)) return false
+  if (typeof v.startedAt !== 'number' || !Array.isArray(v.runIds)) return false
+  if (v.status !== 'active' && v.status !== 'cleared' && v.status !== 'stopped') return false
+  return true
+}
+
 export function listFocus(): FocusBlock[] {
-  try {
-    const raw = localStorage.getItem(KEY)
-    return raw ? (JSON.parse(raw) as FocusBlock[]) : []
-  } catch {
-    return []
-  }
+  const raw = readJSON(KEY)
+  return Array.isArray(raw) ? raw.filter(validBlock) : []
 }
 
 function save(list: FocusBlock[]) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(list))
-  } catch {
-    /* ignore */
-  }
+  // Keep the file small: finished blocks older than 60 days are of no use to anyone.
+  const cutoff = Date.now() - 60 * 24 * 3600 * 1000
+  writeJSON(
+    KEY,
+    list.filter((b) => b.status === 'active' || (b.clearedAt ?? b.startedAt) > cutoff),
+  )
 }
 
 export function activeFocus(drill: DrillId): FocusBlock | null {
@@ -134,11 +147,18 @@ export function progress(block: FocusBlock, history: Attempt[]): FocusProgress {
   })
   const windowRuns = runs.slice(-WINDOW)
   const rows = featurize(block.drill, windowRuns).filter((r) => r.dims[block.dim] === block.value)
-  const current = rows.length >= MIN_ROWS && windowRuns.length >= WINDOW ? (block.kind === 'slow' ? median(rows.map((r) => r.ms)) : rows.reduce((s, r) => s + r.correct, 0) / rows.length) : null
+  const current =
+    rows.length >= MIN_ROWS && windowRuns.length >= WINDOW
+      ? block.kind === 'slow'
+        ? median(rows.map((r) => r.ms))
+        : rows.reduce((s, r) => s + r.correct, 0) / rows.length
+      : null
   const met =
     current !== null &&
     (block.kind === 'slow'
-      ? block.target.medMs !== undefined && current <= block.target.medMs && (block.baseline.acc === undefined || rows.reduce((s, r) => s + r.correct, 0) / rows.length >= block.baseline.acc - 0.03)
+      ? block.target.medMs !== undefined &&
+        current <= block.target.medMs &&
+        (block.baseline.acc === undefined || rows.reduce((s, r) => s + r.correct, 0) / rows.length >= block.baseline.acc - 0.03)
       : block.target.acc !== undefined && current >= block.target.acc)
   return { block, perRun, current, rowsInWindow: rows.length, met }
 }

@@ -46,11 +46,16 @@
 }
 
 /* Rail ---------------------------------------------------------------------- */
+/* Its own scroll region: sticky to the viewport, scrolls on its own when the
+   list is taller than the window, and tells the smooth scroller to leave
+   wheel events over it alone (data-lenis-prevent in the markup). */
 .rail {
   position: sticky;
   top: 0;
   height: 100dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: var(--s-6) var(--s-5) var(--s-6);
   display: flex;
   flex-direction: column;
@@ -63,12 +68,30 @@
   justify-content: space-between;
   gap: var(--s-2);
 }
+.rail__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+.rail__close {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  color: var(--ink-2);
+  place-content: center;
+}
+.rail__close:hover {
+  color: var(--ink);
+  background: var(--ground-2);
+}
 
 .rail__nav {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
   font-size: var(--t-1);
+  padding-bottom: var(--s-8);
 }
 .rail__top {
   display: block;
@@ -132,8 +155,20 @@
 }
 
 /* Mobile -------------------------------------------------------------------- */
+/* Under 860px the rail becomes a drawer. It is fixed above the page on its
+   own layer, slides in from the left, and a scrim covers the page behind it.
+   Everything stays in the document so the transition can run both ways. */
 .scrim {
   display: none;
+}
+.topbar__menu.is-open span:first-child {
+  transform: translateY(3.5px) rotate(45deg);
+}
+.topbar__menu.is-open span:last-child {
+  transform: translateY(-3.5px) rotate(-45deg);
+}
+.topbar__menu span {
+  transition: transform var(--dur-base) var(--ease);
 }
 @media (max-width: 860px) {
   .shell {
@@ -150,29 +185,80 @@
     top: 0;
     left: 0;
     bottom: 0;
+    height: 100dvh;
     width: min(84vw, 320px);
+    padding-top: calc(var(--s-5) + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(var(--s-6) + env(safe-area-inset-bottom, 0px));
     background: var(--ground);
-    transform: translateX(-100%);
-    transition: transform var(--dur-base) var(--ease);
+    border-right: 1px solid var(--ground-3);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+    transform: translateX(-104%);
+    transition: transform var(--dur-base) var(--ease), visibility 0s linear var(--dur-base);
+    visibility: hidden;
     z-index: 40;
+    isolation: isolate;
   }
   .rail--open {
     transform: translateX(0);
+    visibility: visible;
+    transition: transform var(--dur-base) var(--ease), visibility 0s;
   }
   .rail__head {
-    justify-content: flex-end;
+    justify-content: space-between;
   }
-  .rail__brand {
-    display: none;
+  .rail__close {
+    display: grid;
   }
   .scrim {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    border: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-base) var(--ease);
     z-index: 35;
+    cursor: pointer;
+  }
+  .scrim.is-open {
+    opacity: 1;
+    pointer-events: auto;
   }
   .content {
     padding: var(--s-6) var(--gutter) var(--s-8);
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail,
+  .scrim,
+  .topbar__menu span {
+    transition: none;
+  }
+}
+
+/* Error page ---------------------------------------------------------------- */
+.error-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  max-width: 560px;
+  padding-top: var(--s-6);
+}
+.error-page .display {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  margin: 0;
+}
+.error-page__detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.error-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
 }

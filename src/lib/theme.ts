@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { writeString } from './persist'
 
 export const THEMES = [
   { id: 'ink', label: 'Ink', ground: '#0e1117', spot: '#faed26', action: '#2b4dff' },
@@ -23,11 +24,7 @@ export function applyTheme(id: ThemeId) {
   // Cross-fade: every colour transitions for the duration of the switch.
   root.classList.add('theme-switching')
   root.dataset.theme = id
-  try {
-    localStorage.setItem(KEY, id)
-  } catch {
-    /* ignore */
-  }
+  writeString(KEY, id)
   window.setTimeout(() => root.classList.remove('theme-switching'), 760)
 }
 

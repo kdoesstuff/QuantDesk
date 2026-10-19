@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { Attempt, DrillId } from '../lib/types'
 import { store } from '../lib/storage'
-import { loadDrillConfig, saveDrillConfig } from '../lib/config'
+import { readRawDrillConfig, saveDrillConfig } from '../lib/config'
 import { analyze, INSIGHTS_AFTER, percentile, type Finding } from './analyze'
 import { noteRun, startFocus, type FocusProgress } from './focus'
 import { recommend } from './recommend'
@@ -61,7 +61,9 @@ export function FocusStrip({ p }: { p: FocusProgress }) {
       </div>
       <p className="muted">
         {base !== undefined ? `Baseline ${fmt(base)}, target ${fmt(target!)}.` : ''}{' '}
-        {p.current !== null ? `Last ${Math.min(b.runIds.length, 3)} runs: ${fmt(p.current)} over ${p.rowsInWindow} problems.` : `${b.runIds.length} of 3 runs in the window so far${p.rowsInWindow ? `, ${p.rowsInWindow} problems` : ''}.`}
+        {p.current !== null
+          ? `Last ${Math.min(b.runIds.length, 3)} runs: ${fmt(p.current)} over ${p.rowsInWindow} problems.`
+          : `${b.runIds.length} of 3 runs in the window so far${p.rowsInWindow ? `, ${p.rowsInWindow} problems` : ''}.`}
         {b.status === 'cleared' ? ' Target met over three runs. Mixed practice again, and the next weak spot when it shows.' : ''}
       </p>
       {p.perRun.length > 0 && (
@@ -95,14 +97,16 @@ export default function InsightsPanel({ drill, attempt }: { drill: DrillId; atte
   if (!history || !analysis) return null
 
   const onFocus = (f: Finding) => {
-    const cfg = loadDrillConfig<Record<string, unknown>>(drill, {})
+    const cfg = readRawDrillConfig(drill)
     const block = startFocus(f, cfg)
     if (!block) return
     saveDrillConfig(drill, { ...cfg, ...block.patch })
     nav(`/drill/${drill}`)
   }
 
-  const shown = analysis.findings.filter((f) => !(focus && focus.block.status === 'active' && f.dim === focus.block.dim && f.value === focus.block.value)).slice(0, 4)
+  const shown = analysis.findings
+    .filter((f) => !(focus && focus.block.status === 'active' && f.dim === focus.block.dim && f.value === focus.block.value))
+    .slice(0, 4)
   const total = history.reduce((s, a) => s + a.answers.length, 0)
 
   return (
@@ -115,7 +119,9 @@ export default function InsightsPanel({ drill, attempt }: { drill: DrillId; atte
       </div>
       {pc !== null && (
         <p className="muted">
-          {pc >= 0.5 ? `Better than ${pct(pc)} of your ${history.length - 1} other runs with these settings.` : `${pct(1 - pc)} of your ${history.length - 1} other runs with these settings scored higher.`}
+          {pc >= 0.5
+            ? `Better than ${pct(pc)} of your ${history.length - 1} other runs with these settings.`
+            : `${pct(1 - pc)} of your ${history.length - 1} other runs with these settings scored higher.`}
         </p>
       )}
       {focus && <FocusStrip p={focus} />}
@@ -127,7 +133,9 @@ export default function InsightsPanel({ drill, attempt }: { drill: DrillId; atte
         </ul>
       ) : (
         <p className="muted">
-          {total < INSIGHTS_AFTER ? `Insights start once there is enough to be sure of: ${INSIGHTS_AFTER} problems, ${total} so far.` : 'Nothing stands out yet. Categories are within noise of each other, no fade, no lean. Keep the sample growing.'}
+          {total < INSIGHTS_AFTER
+            ? `Insights start once there is enough to be sure of: ${INSIGHTS_AFTER} problems, ${total} so far.`
+            : 'Nothing stands out yet. Categories are within noise of each other, no fade, no lean. Keep the sample growing.'}
         </p>
       )}
     </section>

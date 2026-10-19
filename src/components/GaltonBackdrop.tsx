@@ -66,7 +66,7 @@ export default function GaltonBackdrop({ className }: { className?: string }) {
     const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
     const resetRun = () => {
-      counts = new Array<number>(BINS).fill(0)
+      counts = Array.from({ length: BINS }, () => 0)
       total = 0
       balls.length = 0
       shownMax = 6

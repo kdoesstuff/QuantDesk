@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { AnswerLog, Attempt, SpeedArithmeticConfig } from '../../lib/types'
 import { store, uid } from '../../lib/storage'
 import { configKey, loadConfig, nextProblem, type Problem } from './generator'
@@ -143,6 +143,9 @@ export default function SpeedArithmeticRun() {
 
       <div className="run__meta">
         <span className="tnum run__time">{secs}s</span>
+        <Link to="/drill/speed-arithmetic" className="run__stop" aria-label="Stop and go back to settings">
+          Stop
+        </Link>
         <span className="tnum run__score">{score}</span>
       </div>
 
