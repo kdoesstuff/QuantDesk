@@ -307,6 +307,8 @@ function biasFindings(drill: DrillId, rows: Row[]): Finding[] {
     { dim: 'Lean', high: 'Quoted high', low: 'Quoted low', what: 'your estimates', fix: ['Shade the first number that comes to mind down by a third before you quote.', 'Shade the first number that comes to mind up by a third before you quote.'] },
     { dim: 'Lean', high: 'Guessed high', low: 'Guessed low', what: 'your estimates', fix: ['Your decompositions multiply too many generous factors. Round each factor down.', 'Your decompositions leave factors out. Write the chain before the number.'] },
     { dim: 'Timing', high: 'Fired late', low: 'Fired early', what: 'your shots', fix: ['Fire when the target is one travel time away, not when it looks close.', 'You are anticipating too much. Hold a beat longer.'] },
+    { dim: 'Lean', high: 'Mid too high', low: 'Mid too low', what: 'your quotes', fix: ['Your mid sits above what the tape implies. After sells, move down more.', 'Your mid sits below what the tape implies. After buys, move up more.'] },
+    { dim: 'Width', high: 'too wide', low: 'too tight', what: 'your quotes', fix: ['You quote wider than the informed share justifies and lose the noise flow. Tighten.', 'You quote tighter than the informed share justifies and get picked off. Widen.'] },
   ]
   for (const c of checks) {
     const hi = rows.filter((r) => r.dims[c.dim] === c.high).length

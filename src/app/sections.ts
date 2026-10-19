@@ -37,6 +37,15 @@ export const sections: SectionGroup[] = [
     ],
   },
   {
+    title: 'Prediction',
+    links: [
+      { to: '/drill/race', label: 'The race', status: 'live' },
+      { to: '/drill/evidence', label: 'Evidence stream', status: 'live' },
+      { to: '/drill/event-maker', label: 'Event market maker', status: 'live' },
+      { to: '/drill/dutch-book', label: 'Dutch book', status: 'live' },
+    ],
+  },
+  {
     title: 'Estimation',
     links: [
       { to: '/drill/fermi', label: 'Fermi', status: 'live' },

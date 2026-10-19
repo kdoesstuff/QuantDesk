@@ -132,10 +132,30 @@ const TAG_DIMS: Partial<Record<DrillId, (l: EventLog) => Record<string, string>>
     Colour: cap(String(t(l, 'colour') ?? '')),
     'After a pop': l.tags?.afterPop ? 'Right after a pop' : 'Otherwise',
   }),
+  'dutch-book': (l) => ({
+    Rule: { andCap: '"And" above a leg', andFloor: '"And" below the floor', orIdentity: '"Or" off the identity', complement: 'Complements not 100', orFloor: '"Or" below a leg', none: 'Consistent board' }[String(t(l, 'kind') ?? 'none')] ?? 'Other',
+    Level: `Level ${t(l, 'level') ?? '?'}`,
+  }),
+  race: liveDims,
+  evidence: liveDims,
+  'event-maker': (l) => ({
+    'Came before': t(l, 'after') === 'buy' ? 'After a buy' : t(l, 'after') === 'sell' ? 'After a sell' : t(l, 'after') === 'none' ? 'After no trade' : 'First quote',
+    Width: String(t(l, 'widthCall') ?? 'about right'),
+    Lean: t(l, 'lean') === 'high' ? 'Mid too high' : t(l, 'lean') === 'low' ? 'Mid too low' : 'Mid about right',
+    'Informed share': `${Math.round(Number(t(l, 'informedShare') ?? 0) * 100)}% informed`,
+  }),
+}
+
+function liveDims(l: EventLog): Record<string, string> {
+  return {
+    Market: t(l, 'bot') === 'lag' ? 'Lagging market' : t(l, 'bot') === 'jumpy' ? 'Jumpy market' : 'Efficient market',
+    Action: t(l, 'side') === 'buy' ? 'Bought' : t(l, 'side') === 'sell' ? 'Sold' : l.tags?.missed ? 'Passed with edge on offer' : 'Passed',
+    Entry: t(l, 'entry') === 'early' ? 'Early entry' : t(l, 'entry') === 'middle' ? 'Mid entry' : t(l, 'entry') === 'late' ? 'Late entry' : 'No entry',
+  }
 }
 
 /** Which dimensions describe the stimulus (slice-able causes) versus the outcome. Outcome dims are not offered as weak zones. */
-export const OUTCOME_DIMS = new Set(['Your mid', 'Lean', 'Width', 'Outcome', 'Timing', 'After a pop', 'Trial type'])
+export const OUTCOME_DIMS = new Set(['Your mid', 'Lean', 'Width', 'Outcome', 'Timing', 'After a pop', 'Trial type', 'Action', 'Entry'])
 
 /** Should this row count as answered for time statistics. */
 function answered(l: EventLog) {
@@ -161,6 +181,9 @@ export function featurize(drill: DrillId, attempts: Attempt[]): Row[] {
 
 /** Time is meaningful for most drills; for a few the score is the thing. */
 export const TIME_MATTERS: Partial<Record<DrillId, boolean>> = {
+  race: false,
+  evidence: false,
+  'event-maker': false,
   'make-a-market': false,
   'betting-board': false,
   fermi: false,

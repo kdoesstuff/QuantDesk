@@ -70,3 +70,12 @@ Done.
 2. Your speed arithmetic settings reset to defaults once (storage key moved).
 3. Play a few runs of anything; insights appear after about 100 problems of a drill and tighten with more. The method page has the exact thresholds.
 4. Things I would look at first with real play: whether the make-mode scoring in the dice and cards markets feels right (one point for containing fair plus the spare width), and whether the Fermi reference values read as fair where they are approximate.
+
+## Day after: Prediction group, how to play, run log
+
+- Every settings page has a "How to play" box (`src/drills/howTo.ts`), an Insights note that says how many runs until insights start, and a run log (last 10 to 25 runs with a chart).
+- New group, Prediction, four games:
+  - Dutch book (`typed/specs/dutchBook.tsx`): boards of related contracts with one rule broken or none; pick the arbitrage; keys 1 to 4.
+  - The race and Evidence stream run on a new live engine (`src/drills/live/`): a process ticks, the exact probability is known at every tick, a bot market tracks it with a lag or overshoots it, the player takes one position a round held to resolution, score is expected edge at entry. The whole price path is logged per round and drawn on the result page.
+  - Event market maker (`cognitive/eventMaker.tsx`): Glosten and Milgrom by hand. Informed traders know the outcome, noise traders have a private value so wide quotes trade less. Score is the expected profit of each quote against the engine's posterior; the best possible quote is found by grid search and the shortfall is logged.
+- The Problems group is gone; the question bank idea is replaced by richer question families inside the market games, to be fed by the PDFs.

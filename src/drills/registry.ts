@@ -16,6 +16,10 @@ import { memoryGridSpec } from './cognitive/memoryGrid'
 import { taskSwitchSpec } from './cognitive/taskSwitch'
 import { interceptSpec } from './cognitive/intercept'
 import { balloonSpec } from './cognitive/balloon'
+import { eventMakerSpec } from './cognitive/eventMaker'
+import { dutchBookSpec } from './typed/specs/dutchBook'
+import { raceSpec } from './live/specs/race'
+import { evidenceSpec } from './live/specs/evidence'
 
 /**
  * What the dashboard needs to know about each drill without importing its
@@ -24,7 +28,7 @@ import { balloonSpec } from './cognitive/balloon'
 export interface DrillMeta {
   id: DrillId
   label: string
-  group: 'Speed' | 'Markets' | 'Estimation' | 'Cognitive'
+  group: 'Speed' | 'Markets' | 'Prediction' | 'Estimation' | 'Cognitive'
   describe: (config: unknown) => string
   /** Unit shown after the score, if any. */
   unit?: string
@@ -56,6 +60,10 @@ const list: DrillMeta[] = [
   { id: 'task-switch', label: 'Task switch', group: 'Cognitive', describe: (c) => taskSwitchSpec.describe(c as never), unit: ' ms', higherIsBetter: false, scoreName: 'switch cost' },
   { id: 'intercept', label: 'Intercept', group: 'Cognitive', describe: (c) => interceptSpec.describe(c as never), scoreName: 'hits' },
   { id: 'balloon', label: 'Balloon', group: 'Cognitive', describe: (c) => balloonSpec.describe(c as never), unit: ' pts', scoreName: 'points' },
+  { id: 'dutch-book', label: 'Dutch book', group: 'Prediction', describe: (c) => dutchBookSpec.describe(c as never), unit: ' pts', scoreName: 'points' },
+  { id: 'race', label: 'The race', group: 'Prediction', describe: (c) => raceSpec.describe(c as never), unit: 'c', scoreName: 'edge' },
+  { id: 'evidence', label: 'Evidence stream', group: 'Prediction', describe: (c) => evidenceSpec.describe(c as never), unit: 'c', scoreName: 'edge' },
+  { id: 'event-maker', label: 'Event market maker', group: 'Prediction', describe: (c) => eventMakerSpec.describe(c as never), unit: 'c', scoreName: 'expected profit' },
 ]
 
 export const DRILLS: Partial<Record<DrillId, DrillMeta>> = Object.fromEntries(list.map((m) => [m.id, m]))

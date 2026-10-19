@@ -5,6 +5,7 @@ import { useDrillConfig } from '../../lib/config'
 import { ConfigFrame, Standing } from './Frames'
 import FocusCard from '../../insights/FocusCard'
 import RunLog from './RunLog'
+import { HOW_TO } from '../howTo'
 
 /** What every drill spec shares, enough for the settings page. */
 export interface BaseSpec<C extends object> {
@@ -30,6 +31,7 @@ export default function ConfigPage<C extends object>({ spec }: { spec: BaseSpec<
     <ConfigFrame
       title={spec.title}
       blurb={spec.blurb}
+      howTo={HOW_TO[spec.id]}
       onStart={start}
       valid={valid}
       below={<RunLog drill={spec.id} currentKey={key} />}

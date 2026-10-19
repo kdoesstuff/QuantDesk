@@ -6,6 +6,7 @@ import { configKey, loadConfig, OP_LABEL, saveConfig } from './generator'
 import Sparkline from '../../components/Sparkline'
 import FocusCard from '../../insights/FocusCard'
 import RunLog from '../shared/RunLog'
+import { HOW_TO } from '../howTo'
 import '../shared/drill.css'
 
 const DURATIONS: SpeedArithmeticConfig['durationSec'][] = [30, 60, 120, 300]
@@ -83,6 +84,14 @@ export default function SpeedArithmeticConfigPage() {
           One problem at a time, typed answer, no submit key. A correct answer clears itself. Score is the number right before the clock
           stops.
         </p>
+        <details className="howto" open>
+          <summary>How to play</summary>
+          <ol>
+            {HOW_TO['speed-arithmetic'].map((line, i) => (
+              <li key={i}>{line}</li>
+            ))}
+          </ol>
+        </details>
       </header>
 
       <div className="drill-config__grid">

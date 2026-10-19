@@ -19,6 +19,10 @@ export type DrillId =
   | 'task-switch'
   | 'intercept'
   | 'balloon'
+  | 'race'
+  | 'evidence'
+  | 'event-maker'
+  | 'dutch-book'
 
 export type Operation = 'add' | 'sub' | 'mul' | 'div'
 

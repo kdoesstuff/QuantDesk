@@ -54,6 +54,7 @@ export function ConfigFrame({
   children,
   aside,
   below,
+  howTo,
   onStart,
   valid = true,
   startLabel = 'Start',
@@ -62,6 +63,8 @@ export function ConfigFrame({
   blurb: ReactNode
   children: ReactNode
   aside?: ReactNode
+  /** Numbered steps shown under the blurb. */
+  howTo?: string[]
   /** Rendered under the settings grid, full width. */
   below?: ReactNode
   onStart: () => void
@@ -74,6 +77,16 @@ export function ConfigFrame({
       <header className="drill-head">
         <h1 className="display">{title}</h1>
         <p className="muted">{blurb}</p>
+        {howTo && howTo.length > 0 && (
+          <details className="howto" open>
+            <summary>How to play</summary>
+            <ol>
+              {howTo.map((line, i) => (
+                <li key={i}>{line}</li>
+              ))}
+            </ol>
+          </details>
+        )}
       </header>
       <div className="drill-config__grid">
         <section className="settings">

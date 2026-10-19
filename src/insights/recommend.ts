@@ -96,6 +96,16 @@ export function recommend(f: Finding): Recommendation | null {
     case 'fermi':
       if (d === 'Topic') return patch({ topics: [uncap(v)] }, `Only ${v.toLowerCase()} questions.`)
       return none('Write the chain of factors before the number.')
+    case 'dutch-book':
+      if (d === 'Level') return patch({ level: num(v) }, `Stay on level ${num(v)}.`)
+      return none('Check the rules in order: and below both legs, or above both legs, or equals A plus B minus and, complements sum to 100.')
+    case 'race':
+    case 'evidence':
+      if (d === 'Market') return patch({ bot: v.startsWith('Lagging') ? 'lag' : v.startsWith('Jumpy') ? 'jumpy' : 'mixed' }, `Only ${v.toLowerCase()}s.`)
+      return none('Work out fair before you look at the quote, then compare.')
+    case 'event-maker':
+      if (d === 'Informed share') return patch({ informed: num(v) / 100 }, `Stay at ${v}.`)
+      return none('After a buy move both prices up, after a sell both down. Wider when more of the flow is informed.')
     default:
       return none('Keep playing; this one is about repetition, not settings.')
   }

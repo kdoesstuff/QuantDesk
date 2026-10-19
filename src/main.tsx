@@ -35,6 +35,13 @@ import { memoryGridSpec } from './drills/cognitive/memoryGrid'
 import { taskSwitchSpec } from './drills/cognitive/taskSwitch'
 import { interceptSpec } from './drills/cognitive/intercept'
 import { balloonSpec } from './drills/cognitive/balloon'
+import { eventMakerSpec } from './drills/cognitive/eventMaker'
+import { dutchBookSpec } from './drills/typed/specs/dutchBook'
+import LiveRun from './drills/live/Run'
+import LiveResult from './drills/live/Result'
+import type { LiveConfig, LiveSpec } from './drills/live/spec'
+import { raceSpec } from './drills/live/specs/race'
+import { evidenceSpec } from './drills/live/specs/evidence'
 
 function typedRoutes<C extends object>(spec: TypedSpec<C>): RouteObject[] {
   return [
@@ -57,6 +64,14 @@ function cognitiveRoutes<C extends object>(spec: CognitiveSpec<C>): RouteObject[
     { path: `drill/${spec.id}`, element: <ConfigPage spec={spec} /> },
     { path: `drill/${spec.id}/run`, element: <CognitiveRun spec={spec} /> },
     { path: `drill/${spec.id}/result/:id`, element: <CognitiveResult spec={spec} /> },
+  ]
+}
+
+function liveRoutes<C extends LiveConfig, S>(spec: LiveSpec<C, S>): RouteObject[] {
+  return [
+    { path: `drill/${spec.id}`, element: <ConfigPage spec={spec} /> },
+    { path: `drill/${spec.id}/run`, element: <LiveRun spec={spec} /> },
+    { path: `drill/${spec.id}/result/:id`, element: <LiveResult spec={spec} /> },
   ]
 }
 
@@ -89,6 +104,10 @@ const router = createHashRouter([
       ...cognitiveRoutes(taskSwitchSpec),
       ...cognitiveRoutes(interceptSpec),
       ...cognitiveRoutes(balloonSpec),
+      ...typedRoutes(dutchBookSpec),
+      ...liveRoutes(raceSpec),
+      ...liveRoutes(evidenceSpec),
+      ...cognitiveRoutes(eventMakerSpec),
     ],
   },
 ])
